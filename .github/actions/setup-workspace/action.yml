@@ -1,11 +1,8 @@
 name: Setup Workspace
-description: Checkout repository, configure Node.js and pnpm, and install dependencies.
+description: Configure Node.js and pnpm, then install dependencies. Caller must run actions/checkout beforehand.
 runs:
   using: composite
   steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
@@ -14,6 +11,7 @@ runs:
 
     - name: Setup pnpm
       shell: bash
+      # Requires NODE_VERSION and PNPM_VERSION environment variables defined by the calling workflow
       run: |
         corepack enable
         corepack prepare pnpm@${PNPM_VERSION} --activate

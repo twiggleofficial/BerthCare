@@ -20,7 +20,7 @@ This guide provisions the data-layer dependencies described in the architecture 
 3. Ensure your shell loads the variables before starting the backend, for example:
 
    ```bash
-   export $(grep -v '^#' .env | xargs)
+   set -a && source .env && set +a
    ```
 
 ## Start Infrastructure Services

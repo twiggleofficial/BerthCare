@@ -11,7 +11,7 @@ module "vpc" {
   database_subnets = var.database_subnet_cidrs
 
   enable_nat_gateway           = true
-  single_nat_gateway           = true
+  single_nat_gateway           = true # staging cost optimisation; introduces single point of failure for outbound traffic
   enable_dns_hostnames         = true
   enable_dns_support           = true
   create_igw                   = true

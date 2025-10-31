@@ -1,3 +1,7 @@
+data "aws_cloudfront_cache_policy" "optimized" {
+  name = "Managed-CachingOptimized"
+}
+
 resource "aws_cloudfront_origin_access_control" "s3" {
   name                              = "${local.name_prefix}-oac"
   description                       = "Origin access control for BerthCare staging S3 origins."
@@ -25,6 +29,8 @@ resource "aws_cloudfront_distribution" "assets" {
     origin_access_control_id = aws_cloudfront_origin_access_control.s3.id
   }
 
+  # Staging serves documents/photos from independent origins; consider configuring origin failover when production resilience requirements are defined.
+
   default_cache_behavior {
     target_origin_id       = "photos-origin"
     viewer_protocol_policy = "redirect-to-https"
@@ -32,7 +38,7 @@ resource "aws_cloudfront_distribution" "assets" {
     cached_methods         = ["GET", "HEAD"]
     compress               = true
 
-    cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6" # Managed-CachingOptimized
+    cache_policy_id = data.aws_cloudfront_cache_policy.optimized.id
   }
 
   ordered_cache_behavior {
@@ -43,7 +49,7 @@ resource "aws_cloudfront_distribution" "assets" {
     cached_methods         = ["GET", "HEAD"]
     compress               = true
 
-    cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+    cache_policy_id = data.aws_cloudfront_cache_policy.optimized.id
   }
 
   restrictions {
@@ -55,7 +61,7 @@ resource "aws_cloudfront_distribution" "assets" {
   viewer_certificate {
     cloudfront_default_certificate = var.cloudfront_acm_certificate_arn == ""
     acm_certificate_arn            = var.cloudfront_acm_certificate_arn != "" ? var.cloudfront_acm_certificate_arn : null
-    minimum_protocol_version       = var.cloudfront_acm_certificate_arn != "" ? "TLSv1.2_2021" : "TLSv1"
+    minimum_protocol_version       = "TLSv1.2_2021"
   }
 
   default_root_object = ""

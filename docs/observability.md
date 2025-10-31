@@ -23,7 +23,7 @@ Terraform creates two Secrets Manager entries:
 - `/berthcare/staging/sentry/backend`
 - `/berthcare/staging/sentry/mobile`
 
-Populate the DSNs either by setting `sentry_backend_dsn` / `sentry_mobile_dsn` securely in `terraform.tfvars` (not committed) or by adding a secret value manually in the AWS console. Each secret stores:
+Populate the DSNs either by setting `sentry_backend_dsn` / `sentry_mobile_dsn` in a git-ignored `terraform.tfvars` (keep secrets out of version control) or by adding a secret value manually in the AWS console. Each secret stores:
 
 ```json
 {
@@ -66,11 +66,13 @@ import * as Sentry from '@sentry/react-native';
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.SENTRY_ENVIRONMENT,
-  tracesSampleRate: 0.1
+ tracesSampleRate: 0.1
 });
 ```
 
 3. Trigger `Sentry.captureMessage('Staging mobile smoke test')` during QA to verify events appear in Sentry.
+
+> **Note:** React Native bundles do not read environment variables at runtime by default. Use Expo config plugins, `expo-constants`, or libraries such as `react-native-config` to inject `SENTRY_DSN` and `SENTRY_ENVIRONMENT` during the build.
 
 ## Operational Checklist
 

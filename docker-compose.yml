@@ -37,7 +37,7 @@ services:
       - berth-dev
 
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack:3.4.0
     container_name: berth_localstack
     restart: unless-stopped
     ports:

@@ -32,7 +32,7 @@ This document is the source of truth for how the BerthCare staging environment i
 | Private app subnets (`10.10.11.0/24`, `10.10.12.0/24`) | `private_subnet_ids` | Host ECS Fargate tasks and private workloads. |
 | Database subnets (`10.10.21.0/24`, `10.10.22.0/24`) | `database_subnet_ids` | Dedicated to the RDS subnet group. |
 
-The VPC module provisions an Internet Gateway, single NAT Gateway (shared between AZs), and route tables automatically. Subnet tags (`Tier=public/application/database`) feed cost allocation and security automation.
+The VPC module provisions an Internet Gateway, single NAT Gateway (shared between AZs), and route tables automatically. Subnet tags (`Tier=public/application/database`) feed cost allocation and security automation. The single-NAT setup keeps staging costs down; note that it also introduces a single point of failure for outbound traffic from private subnets, so production should plan for one NAT per AZ.
 
 ### Security Groups
 

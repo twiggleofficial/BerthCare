@@ -6,7 +6,7 @@
   "scripts": {
     "nx": "nx",
     "lint": "nx run-many --target=lint --all",
-    "format:check": "prettier --check \"apps/**/*.{ts,tsx,js,jsx,json}\" \"libs/**/*.{ts,tsx,js,jsx,json}\" \"docs/**/*.{ts,tsx,js,jsx,json,md}\" \"*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check .",
     "typecheck": "nx run-many --target=typecheck --all",
     "test": "nx run-many --target=test --all",
     "audit": "pnpm audit --prod --dev"
