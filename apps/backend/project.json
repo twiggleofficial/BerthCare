@@ -29,6 +29,33 @@
         "command": "node dist/apps/backend/main.js"
       },
       "dependsOn": ["build"]
+    },
+    "migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node-pg-migrate --config apps/backend/node-pg-migrate.config.cjs up"
+      }
+    },
+    "migrateDown": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node-pg-migrate --config apps/backend/node-pg-migrate.config.cjs down"
+      }
+    },
+    "migrateCreate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node-pg-migrate --config apps/backend/node-pg-migrate.config.cjs create",
+        "forwardAllArgs": true
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/apps/backend"],
+      "options": {
+        "jestConfig": "apps/backend/jest.config.cjs",
+        "passWithNoTests": false
+      }
     }
   },
   "tags": ["scope:backend", "type:application"]
