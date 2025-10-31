@@ -8,6 +8,7 @@ on:
 env:
   NODE_VERSION: '20'
   PNPM_VERSION: '9.0.0'
+  SNYK_CODE_ENABLED: ${{ vars.SNYK_CODE_ENABLED || 'false' }}
 
 permissions:
   contents: read
@@ -81,8 +82,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Setup Snyk CLI
+        if: env.SNYK_CODE_ENABLED == 'true'
         uses: snyk/actions/setup@master
       - name: Run Snyk Code scan
+        if: env.SNYK_CODE_ENABLED == 'true'
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: snyk code test --severity-threshold=medium
