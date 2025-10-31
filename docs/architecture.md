@@ -8,14 +8,14 @@ This document is the source of truth for how the BerthCare staging environment i
 
 ## Environment Overview
 
-| Item | Value |
-|------|-------|
-| AWS account | `berthcare` shared services (state stored in `berthcare-terraform-state`) |
+| Item              | Value                                                                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| AWS account       | `berthcare` shared services (state stored in `berthcare-terraform-state`)                                                |
 | Terraform backend | S3 bucket `berthcare-terraform-state`, DynamoDB table `berthcare-terraform-locks`, state key `staging/terraform.tfstate` |
-| Region | `ca-central-1` (Montreal) |
-| Environment tag | `staging` (`Environment=staging`) |
-| Naming prefix | `berthcare-staging-<component>` |
-| IaC entrypoint | `infra/terraform/environments/staging` |
+| Region            | `ca-central-1` (Montreal)                                                                                                |
+| Environment tag   | `staging` (`Environment=staging`)                                                                                        |
+| Naming prefix     | `berthcare-staging-<component>`                                                                                          |
+| IaC entrypoint    | `infra/terraform/environments/staging`                                                                                   |
 
 `terraform output -state=...` exposes authoritative IDs for every resource listed below; the table captures the friendly names and how they map to those outputs.
 
@@ -25,22 +25,22 @@ This document is the source of truth for how the BerthCare staging environment i
 
 ### Virtual Private Cloud
 
-| Component | Terraform Output | Notes |
-|-----------|------------------|-------|
-| VPC (`berthcare-staging-vpc`) | `vpc_id` | `/16` CIDR `10.10.0.0/16` with DNS hostnames/support enabled. |
-| Public subnets (`10.10.1.0/24`, `10.10.2.0/24`) | `public_subnet_ids` | Used by the internet-facing load balancer and NAT gateway. |
-| Private app subnets (`10.10.11.0/24`, `10.10.12.0/24`) | `private_subnet_ids` | Host ECS Fargate tasks and private workloads. |
-| Database subnets (`10.10.21.0/24`, `10.10.22.0/24`) | `database_subnet_ids` | Dedicated to the RDS subnet group. |
+| Component                                              | Terraform Output      | Notes                                                         |
+| ------------------------------------------------------ | --------------------- | ------------------------------------------------------------- |
+| VPC (`berthcare-staging-vpc`)                          | `vpc_id`              | `/16` CIDR `10.10.0.0/16` with DNS hostnames/support enabled. |
+| Public subnets (`10.10.1.0/24`, `10.10.2.0/24`)        | `public_subnet_ids`   | Used by the internet-facing load balancer and NAT gateway.    |
+| Private app subnets (`10.10.11.0/24`, `10.10.12.0/24`) | `private_subnet_ids`  | Host ECS Fargate tasks and private workloads.                 |
+| Database subnets (`10.10.21.0/24`, `10.10.22.0/24`)    | `database_subnet_ids` | Dedicated to the RDS subnet group.                            |
 
 The VPC module provisions an Internet Gateway, single NAT Gateway (shared between AZs), and route tables automatically. Subnet tags (`Tier=public/application/database`) feed cost allocation and security automation. The single-NAT setup keeps staging costs down; note that it also introduces a single point of failure for outbound traffic from private subnets, so production should plan for one NAT per AZ.
 
 ### Security Groups
 
-| Name | Purpose | Ingress |
-|------|---------|---------|
-| `berthcare-staging-app-sg` | Attach to ECS/Fargate tasks and other app compute resources. | Deny by default; referenced by other security group rules to grant access. |
-| `berthcare-staging-rds-sg` | Protects PostgreSQL. | TCP/5432 from `app-sg` and any `trusted_office_cidrs` defined in `terraform.tfvars`. |
-| `berthcare-staging-redis-sg` | Protects Redis. | TCP/6379 from `app-sg` and `trusted_office_cidrs`. |
+| Name                         | Purpose                                                      | Ingress                                                                              |
+| ---------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `berthcare-staging-app-sg`   | Attach to ECS/Fargate tasks and other app compute resources. | Deny by default; referenced by other security group rules to grant access.           |
+| `berthcare-staging-rds-sg`   | Protects PostgreSQL.                                         | TCP/5432 from `app-sg` and any `trusted_office_cidrs` defined in `terraform.tfvars`. |
+| `berthcare-staging-redis-sg` | Protects Redis.                                              | TCP/6379 from `app-sg` and `trusted_office_cidrs`.                                   |
 
 All security groups allow outbound access to the internet to support package downloads and AWS API access.
 
@@ -59,40 +59,40 @@ The staging stack assumes API workloads run on **ECS Fargate** behind an **Appli
 
 ### PostgreSQL (Amazon RDS)
 
-| Setting | Value |
-|---------|-------|
-| Identifier | `berthcare-staging-postgres` |
-| Engine/version | PostgreSQL 15.5 (multi-AZ) |
-| Instance class | `db.t4g.large` |
-| Storage | 100 GB allocated, autoscaling to 500 GB |
-| Backups | 14-day retention, window `03:30–04:30` UTC |
-| Maintenance | Sunday `04:00–05:00` UTC |
+| Setting        | Value                                                                        |
+| -------------- | ---------------------------------------------------------------------------- |
+| Identifier     | `berthcare-staging-postgres`                                                 |
+| Engine/version | PostgreSQL 15.5 (multi-AZ)                                                   |
+| Instance class | `db.t4g.large`                                                               |
+| Storage        | 100 GB allocated, autoscaling to 500 GB                                      |
+| Backups        | 14-day retention, window `03:30–04:30` UTC                                   |
+| Maintenance    | Sunday `04:00–05:00` UTC                                                     |
 | Authentication | Username `berthcare_app`, password generated via `random_password.db_master` |
-| Logs | PostgreSQL & upgrade event streams forwarded to CloudWatch |
+| Logs           | PostgreSQL & upgrade event streams forwarded to CloudWatch                   |
 
 Retrieve the live endpoint via `terraform output rds_endpoint`. Credentials are stored in Secrets Manager at `/berthcare/staging/database`.
 
 ### Redis (Amazon ElastiCache)
 
-| Setting | Value |
-|---------|-------|
-| Replication group ID | `berthcare-staging-redis` |
-| Engine/version | Redis 7.1 |
-| Topology | 2 cache nodes (`cache.t4g.medium`), multi-AZ failover |
-| Encryption | In-transit + at-rest enabled |
-| Maintenance window | Sunday `06:00–07:00` UTC |
-| Auth | 32-character token generated via `random_password.redis_auth_token` |
+| Setting              | Value                                                               |
+| -------------------- | ------------------------------------------------------------------- |
+| Replication group ID | `berthcare-staging-redis`                                           |
+| Engine/version       | Redis 7.1                                                           |
+| Topology             | 2 cache nodes (`cache.t4g.medium`), multi-AZ failover               |
+| Encryption           | In-transit + at-rest enabled                                        |
+| Maintenance window   | Sunday `06:00–07:00` UTC                                            |
+| Auth                 | 32-character token generated via `random_password.redis_auth_token` |
 
 Primary and reader endpoints are exposed via `terraform output redis_primary_endpoint` / `redis_reader_endpoint`. Auth token and endpoint metadata are stored in Secrets Manager at `/berthcare/staging/redis`.
 
 ### Object Storage & CDN
 
-| Resource | Notes |
-|----------|-------|
-| S3 bucket `berthcare-staging-photos` | Versioned, KMS-encrypted, lifecycle to Standard-IA at 90 days and Glacier at 365 days. Public access fully blocked. |
-| S3 bucket `berthcare-staging-documents` | Versioned, KMS-encrypted, 7-year retention policy. Public access fully blocked. |
-| CloudFront Origin Access Control | `berthcare-staging-oac` signs requests to both buckets. |
-| CloudFront distribution | Comment `BerthCare staging asset distribution`, default origin `photos`, path-based origin for `documents/*`, HTTP/2+3, optional logging prefix `cloudfront/`. DNS name available via `terraform output cloudfront_distribution_domain`. |
+| Resource                                | Notes                                                                                                                                                                                                                                    |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S3 bucket `berthcare-staging-photos`    | Versioned, KMS-encrypted, lifecycle to Standard-IA at 90 days and Glacier at 365 days. Public access fully blocked.                                                                                                                      |
+| S3 bucket `berthcare-staging-documents` | Versioned, KMS-encrypted, 7-year retention policy. Public access fully blocked.                                                                                                                                                          |
+| CloudFront Origin Access Control        | `berthcare-staging-oac` signs requests to both buckets.                                                                                                                                                                                  |
+| CloudFront distribution                 | Comment `BerthCare staging asset distribution`, default origin `photos`, path-based origin for `documents/*`, HTTP/2+3, optional logging prefix `cloudfront/`. DNS name available via `terraform output cloudfront_distribution_domain`. |
 
 Applications interact with the buckets via IAM policies attached to the ECS task role (`berthcare-staging-ecs-task`). CloudFront requires either the default certificate or a custom ACM ARN supplied in `terraform.tfvars`.
 
@@ -135,10 +135,10 @@ Keep `.env` in sync for local testing—the template includes Twilio variables p
 
 Local parity is delivered via Docker Compose (`docker-compose.yml`):
 
-| Service | Image | Ports | Data volume | Notes |
-|---------|-------|-------|-------------|-------|
-| `berth_postgres` | `postgres:15-alpine` | Host `${POSTGRES_PORT:-5432}` | `postgres_data` | Seeds database credentials from `.env`. |
-| `berth_redis` | `redis:7-alpine` | Host `${REDIS_PORT:-6379}` | `redis_data` | Persists snapshot data to speed up restarts. |
+| Service            | Image                          | Ports                           | Data volume       | Notes                                                  |
+| ------------------ | ------------------------------ | ------------------------------- | ----------------- | ------------------------------------------------------ |
+| `berth_postgres`   | `postgres:15-alpine`           | Host `${POSTGRES_PORT:-5432}`   | `postgres_data`   | Seeds database credentials from `.env`.                |
+| `berth_redis`      | `redis:7-alpine`               | Host `${REDIS_PORT:-6379}`      | `redis_data`      | Persists snapshot data to speed up restarts.           |
 | `berth_localstack` | `localstack/localstack:latest` | Host `${LOCALSTACK_PORT:-4566}` | `localstack_data` | Provides S3-compatible API used by the backend in dev. |
 
 Workflow recap:

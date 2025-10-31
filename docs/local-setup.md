@@ -49,29 +49,29 @@ All containers should report a `healthy` status once ready.
 
 #### Inspect container logs when a service is unhealthy
 
-  ```bash
-  docker compose logs postgres
-  docker compose logs redis
-  docker compose logs localstack
-  ```
+```bash
+docker compose logs postgres
+docker compose logs redis
+docker compose logs localstack
+```
 
 #### Confirm Docker is running and responsive
 
-  ```bash
-  docker info
-  ```
+```bash
+docker info
+```
 
-  Restart Docker Desktop if the command reports errors.
+Restart Docker Desktop if the command reports errors.
 
 #### Detect port conflicts (e.g., PostgreSQL on 5432, Redis on 6379, LocalStack on 4566)
 
-  ```bash
-  lsof -i :5432
-  lsof -i :6379
-  lsof -i :4566
-  ```
+```bash
+lsof -i :5432
+lsof -i :6379
+lsof -i :4566
+```
 
-  Stop the conflicting process or override the service port in `.env`.
+Stop the conflicting process or override the service port in `.env`.
 
 #### Recover from failed healthchecks
 
@@ -89,6 +89,7 @@ All containers should report a `healthy` status once ready.
   ```
 
 Preserve persistent data unless state is corrupt (e.g., migrations broken). Use `--volumes` only when you intentionally want a clean database/cache.
+
 ## Run the Backend Against Docker Services
 
 1. Install dependencies if you have not already:

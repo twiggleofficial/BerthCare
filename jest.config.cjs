@@ -1,3 +1,3 @@
 module.exports = {
-  projects: ['<rootDir>/libs/shared/care-plan/jest.config.cjs']
+  projects: ['<rootDir>/libs/shared/care-plan/jest.config.cjs'],
 };

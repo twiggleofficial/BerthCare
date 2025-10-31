@@ -3,7 +3,7 @@ module.exports = {
   env: {
     es2022: true,
     node: true,
-    jest: true
+    jest: true,
   },
   plugins: ['@nx', '@typescript-eslint'],
   extends: ['plugin:@nx/typescript', 'plugin:@typescript-eslint/recommended', 'prettier'],
@@ -14,11 +14,11 @@ module.exports = {
       parser: '@typescript-eslint/parser',
       parserOptions: {
         ecmaVersion: 'latest',
-        sourceType: 'module'
+        sourceType: 'module',
       },
       rules: {
-        '@typescript-eslint/no-explicit-any': 'warn'
-      }
-    }
-  ]
+        '@typescript-eslint/no-explicit-any': 'warn',
+      },
+    },
+  ],
 };

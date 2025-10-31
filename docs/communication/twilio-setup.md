@@ -96,13 +96,13 @@ For each subaccount:
 5. Record the subaccount’s **Auth Token** as a fallback credential (Twilio still issues it).
 6. Recommended mapping:
 
-| Terraform variable | Twilio console value |
-|--------------------|----------------------|
-| `twilio_account_sid` | Master Account SID (`AC...`) |
+| Terraform variable      | Twilio console value             |
+| ----------------------- | -------------------------------- |
+| `twilio_account_sid`    | Master Account SID (`AC...`)     |
 | `twilio_subaccount_sid` | Environment-specific Account SID |
-| `twilio_api_key_sid` | API Key SID (`SK...`) |
-| `twilio_api_key_secret` | API Key Secret |
-| `twilio_auth_token` | Subaccount Auth Token |
+| `twilio_api_key_sid`    | API Key SID (`SK...`)            |
+| `twilio_api_key_secret` | API Key Secret                   |
+| `twilio_auth_token`     | Subaccount Auth Token            |
 
 ---
 

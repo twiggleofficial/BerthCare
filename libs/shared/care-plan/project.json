@@ -11,10 +11,9 @@
       }
     },
     "typecheck": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{workspaceRoot}/dist/libs/shared/care-plan"],
+      "executor": "nx:run-commands",
       "options": {
-        "tsConfig": "libs/shared/care-plan/tsconfig.lib.json"
+        "command": "tsc --noEmit --project libs/shared/care-plan/tsconfig.lib.json"
       }
     },
     "test": {

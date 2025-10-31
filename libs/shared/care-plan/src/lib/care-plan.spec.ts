@@ -5,7 +5,7 @@ describe('summarizeCarePlan', () => {
     const summary = summarizeCarePlan({
       id: 'plan-1',
       title: 'Post-operative support',
-      isActive: true
+      isActive: true,
     });
 
     expect(summary).toBe('Post-operative support (active)');
@@ -15,7 +15,7 @@ describe('summarizeCarePlan', () => {
     const summary = summarizeCarePlan({
       id: 'plan-2',
       title: 'Discharge follow-up',
-      isActive: false
+      isActive: false,
     });
 
     expect(summary).toBe('Discharge follow-up (inactive)');
