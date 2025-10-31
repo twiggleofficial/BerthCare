@@ -51,12 +51,8 @@ services:
     volumes:
       - localstack_data:/var/lib/localstack
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'awslocal s3 ls >/dev/null 2>&1 || awslocal s3 mb s3://${AWS_S3_BUCKET:-berthcare-local} >/dev/null 2>&1',
-        ]
-      interval: 15s
+      test: ['CMD', 'curl', '-f', 'http://localhost:4566/_localstack/health']
+      interval: 10s
       timeout: 5s
       retries: 5
     networks:

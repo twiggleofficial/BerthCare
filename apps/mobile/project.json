@@ -26,8 +26,10 @@
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "echo \"Mobile app serve task placeholder\""
-      }
+        "command": "pnpm exec expo start",
+        "cwd": "apps/mobile"
+      },
+      "description": "Launch the Expo dev server for the mobile app (requires expo CLI via pnpm exec)."
     }
   },
   "tags": ["scope:mobile", "type:application"]

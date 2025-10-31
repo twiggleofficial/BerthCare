@@ -78,3 +78,11 @@ Sentry.init({
 - ✅ Verify dashboard widgets populate after traffic flows through the load balancer.
 - ✅ Set up CloudWatch Logs Insights saved queries for `/aws/ecs/<service>` if deeper investigations are required.
 - ✅ Schedule quarterly tests of both CloudWatch alarms and Sentry ingestion to maintain confidence in the monitoring pipeline.
+
+### Troubleshooting
+
+- Confirm SNS subscribers clicked the confirmation email; resend the subscription or add a temporary endpoint if alerts are not arriving.
+- Check CloudWatch alarm actions and IAM permissions so alarms can publish to `berthcare-staging-alerts`.
+- Validate Sentry DSN and `SENTRY_ENVIRONMENT` values in `/berthcare/staging/sentry/*`; ensure clients have outbound network access.
+- Inspect ECS task definitions to verify the log group is `/aws/ecs/berthcare-staging-api` and that retention is set per `log_retention_days`.
+- Review CloudWatch Logs for throttling or access errors when widgets or alarms stop updating.

@@ -64,7 +64,9 @@ data "aws_iam_policy_document" "ecs_task_permissions" {
     sid       = "AllowRedisDiscovery"
     effect    = "Allow"
     actions   = ["elasticache:DescribeReplicationGroups"]
-    resources = ["*"]
+    resources = [
+      aws_elasticache_replication_group.redis.arn
+    ]
   }
 
   statement {
