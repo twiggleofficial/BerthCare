@@ -51,6 +51,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "photos" {
       days          = 365
       storage_class = "GLACIER"
     }
+
+    transition {
+      days          = 2555 # Archive after ~7 years as per retention policy
+      storage_class = "DEEP_ARCHIVE"
+    }
   }
 }
 
