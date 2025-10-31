@@ -12,7 +12,9 @@ const normalisePort = (value: string): number => {
   return Number.isNaN(parsed) ? DEFAULT_PORT : parsed;
 };
 
-export const startBackend = (port: number = normalisePort(process.env.PORT ?? `${DEFAULT_PORT}`)): Server => {
+export const startBackend = (
+  port: number = normalisePort(process.env.PORT ?? `${DEFAULT_PORT}`)
+): Server => {
   const server = app.listen(port, () => {
     logger.info(`Backend service listening on port ${port}`);
   });
@@ -38,7 +40,7 @@ export const startBackend = (port: number = normalisePort(process.env.PORT ?? `$
     } catch (error) {
       const err = error as Error;
       logger.error('Error while closing HTTP server', {
-        message: err.message
+        message: err.message,
       });
       hasErrors = true;
     }
@@ -49,7 +51,7 @@ export const startBackend = (port: number = normalisePort(process.env.PORT ?? `$
     } catch (error) {
       const err = error as Error;
       logger.error('Error while closing database pool', {
-        message: err.message
+        message: err.message,
       });
       hasErrors = true;
     }
@@ -60,7 +62,7 @@ export const startBackend = (port: number = normalisePort(process.env.PORT ?? `$
     } catch (error) {
       const err = error as Error;
       logger.error('Error while closing Redis connections', {
-        message: err.message
+        message: err.message,
       });
       hasErrors = true;
     }
@@ -79,7 +81,7 @@ export const startBackend = (port: number = normalisePort(process.env.PORT ?? `$
   server.on('error', (error: NodeJS.ErrnoException) => {
     logger.error('Server error', {
       message: error.message,
-      code: error.code
+      code: error.code,
     });
     process.exit(1);
   });
@@ -99,7 +101,7 @@ process.on('unhandledRejection', (reason) => {
 process.on('uncaughtException', (error: Error) => {
   logger.error('Uncaught exception', {
     message: error.message,
-    stack: error.stack
+    stack: error.stack,
   });
   process.exit(1);
 });

@@ -4,11 +4,7 @@
 
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 
-import {
-  buildPhotoStorageKey,
-  generatePhotoUploadUrl,
-  resetS3Client
-} from './s3';
+import { buildPhotoStorageKey, generatePhotoUploadUrl, resetS3Client } from './s3';
 
 let capturedCommand: PutObjectCommand | undefined;
 
@@ -16,11 +12,11 @@ jest.mock('@aws-sdk/s3-request-presigner', () => ({
   getSignedUrl: jest.fn(async (_client, command) => {
     capturedCommand = command as PutObjectCommand;
     return 'https://example.com/upload';
-  })
+  }),
 }));
 
 jest.mock('node:crypto', () => ({
-  randomUUID: () => 'fixed-uuid'
+  randomUUID: () => 'fixed-uuid',
 }));
 
 describe('S3 storage helpers', () => {
@@ -35,7 +31,7 @@ describe('S3 storage helpers', () => {
     const key = buildPhotoStorageKey({
       visitId: 'visit-123/../../../',
       extension: 'JPEG',
-      capturedAt: '2025-01-02T03:04:05.000Z'
+      capturedAt: '2025-01-02T03:04:05.000Z',
     });
 
     expect(key.startsWith('visits/visit-123')).toBe(true);
@@ -61,10 +57,10 @@ describe('S3 storage helpers', () => {
           originalBytes: 2_000_000,
           compressedBytes: 1_100_000,
           width: 4032,
-          height: 3024
-        }
+          height: 3024,
+        },
       },
-      expiresInSeconds
+      expiresInSeconds,
     });
 
     expect(result.uploadUrl).toBe('https://example.com/upload');
@@ -89,7 +85,7 @@ describe('S3 storage helpers', () => {
       compressed_bytes: '1100000',
       image_width: '4032',
       image_height: '3024',
-      compression_ratio: expect.any(String)
+      compression_ratio: expect.any(String),
     });
   });
 });

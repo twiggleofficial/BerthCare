@@ -51,9 +51,13 @@ const buildPoolConfig = (role: PoolRole): PoolConfig => {
   const password = readEnv(role, 'PASSWORD', process.env.DB_PASSWORD);
   const maxConnections = parseInteger(readEnv(role, 'POOL_MAX'), MAX_POOL_CONNECTIONS, {
     min: 1,
-    max: MAX_POOL_CONNECTIONS
+    max: MAX_POOL_CONNECTIONS,
   });
-  const idleTimeoutMillis = parseInteger(readEnv(role, 'IDLE_TIMEOUT_MS'), DEFAULT_IDLE_TIMEOUT_MS, { min: 1 });
+  const idleTimeoutMillis = parseInteger(
+    readEnv(role, 'IDLE_TIMEOUT_MS'),
+    DEFAULT_IDLE_TIMEOUT_MS,
+    { min: 1 }
+  );
   const connectionTimeoutMillis = parseInteger(
     readEnv(role, 'CONNECTION_TIMEOUT_MS'),
     DEFAULT_CONNECTION_TIMEOUT_MS,
@@ -62,8 +66,9 @@ const buildPoolConfig = (role: PoolRole): PoolConfig => {
   const applicationNameDefault =
     role === 'read-replica'
       ? `${process.env.DB_APPLICATION_NAME ?? 'berth-backend'}-read`
-      : process.env.DB_APPLICATION_NAME ?? 'berth-backend';
-  const applicationName = readEnv(role, 'APPLICATION_NAME', applicationNameDefault) ?? applicationNameDefault;
+      : (process.env.DB_APPLICATION_NAME ?? 'berth-backend');
+  const applicationName =
+    readEnv(role, 'APPLICATION_NAME', applicationNameDefault) ?? applicationNameDefault;
   const sslEnabled = readEnv(role, 'USE_SSL') === 'true';
   const rejectUnauthorized = readEnv(role, 'SSL_REJECT_UNAUTHORIZED') !== 'false';
 
@@ -76,12 +81,12 @@ const buildPoolConfig = (role: PoolRole): PoolConfig => {
     max: maxConnections,
     idleTimeoutMillis,
     connectionTimeoutMillis,
-    application_name: applicationName
+    application_name: applicationName,
   };
 
   if (sslEnabled) {
     config.ssl = {
-      rejectUnauthorized
+      rejectUnauthorized,
     };
   }
 
@@ -92,7 +97,7 @@ const attachPoolLogging = (pool: Pool, role: PoolRole): void => {
   pool.on('error', (error: Error) => {
     logger.error(`Unexpected PostgreSQL client error (${role})`, {
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
   });
 };
@@ -103,7 +108,9 @@ attachPoolLogging(primaryPool, 'primary');
 let readReplicaPool: Pool | undefined;
 
 const shouldInitialiseReadReplica = (): boolean =>
-  Boolean(process.env.DB_REPLICA_HOST || process.env.DB_REPLICA_NAME || process.env.DB_REPLICA_USER);
+  Boolean(
+    process.env.DB_REPLICA_HOST || process.env.DB_REPLICA_NAME || process.env.DB_REPLICA_USER
+  );
 
 if (shouldInitialiseReadReplica()) {
   try {
@@ -113,7 +120,7 @@ if (shouldInitialiseReadReplica()) {
   } catch (error) {
     const err = error as Error;
     logger.warn('Failed to initialise read replica pool, falling back to primary for reads', {
-      message: err.message
+      message: err.message,
     });
     readReplicaPool = undefined;
   }
@@ -148,18 +155,18 @@ const measureHealth = async (pool: Pool): Promise<HealthCheckDetails> => {
 
     return {
       healthy: true,
-      latencyMs: Number(durationMs.toFixed(3))
+      latencyMs: Number(durationMs.toFixed(3)),
     };
   } catch (error) {
     const err = error as Error;
 
     logger.warn('Database health check failed', {
-      message: err.message
+      message: err.message,
     });
 
     return {
       healthy: false,
-      error: err.message
+      error: err.message,
     };
   }
 };
@@ -172,8 +179,8 @@ export const checkDatabaseConnection = async (): Promise<DatabaseHealth> => {
     healthy: primaryHealth.healthy && (replicaHealth?.healthy ?? true),
     nodes: {
       primary: primaryHealth,
-      ...(replicaHealth ? { readReplica: replicaHealth } : {})
-    }
+      ...(replicaHealth ? { readReplica: replicaHealth } : {}),
+    },
   };
 };
 

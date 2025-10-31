@@ -36,7 +36,11 @@ const sanitizeUrl = (originalUrl: string): string => {
   }
 };
 
-const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, timeoutError: Error): Promise<T> => {
+const withTimeout = async <T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  timeoutError: Error
+): Promise<T> => {
   let timeoutId: NodeJS.Timeout | undefined;
 
   const timeoutPromise = new Promise<never>((_, reject) => {
@@ -64,17 +68,19 @@ const rateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: rateLimitMax,
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
 });
 
 export const app = express();
 
 app.disable('x-powered-by');
 app.use(helmet());
-app.use(cors({
-  origin: allowedOrigins && allowedOrigins.length > 0 ? allowedOrigins : false,
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: allowedOrigins && allowedOrigins.length > 0 ? allowedOrigins : false,
+    credentials: true,
+  })
+);
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -91,7 +97,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       durationMs,
       method: req.method,
       url: sanitizedUrl,
-      userAgent: req.get('user-agent') ?? undefined
+      userAgent: req.get('user-agent') ?? undefined,
     });
   });
 
@@ -106,11 +112,7 @@ app.get('/health', async (_req: Request, res: Response, next: NextFunction) => {
 
   try {
     const [dbHealth, redisHealth, storageHealth] = await withTimeout(
-      Promise.all([
-        checkDatabaseConnection(),
-        checkRedisConnection(),
-        checkPhotoBucketHealth()
-      ]),
+      Promise.all([checkDatabaseConnection(), checkRedisConnection(), checkPhotoBucketHealth()]),
       HEALTH_CHECK_TIMEOUT_MS,
       timeoutError
     );
@@ -122,13 +124,13 @@ app.get('/health', async (_req: Request, res: Response, next: NextFunction) => {
       checks: {
         database: dbHealth,
         redis: redisHealth,
-        storage: storageHealth
-      }
+        storage: storageHealth,
+      },
     });
   } catch (error) {
     if (error === timeoutError) {
       logger.warn('Health check timed out', {
-        timeoutMs: HEALTH_CHECK_TIMEOUT_MS
+        timeoutMs: HEALTH_CHECK_TIMEOUT_MS,
       });
 
       res.status(503).json({
@@ -138,23 +140,23 @@ app.get('/health', async (_req: Request, res: Response, next: NextFunction) => {
           database: {
             healthy: false,
             nodes: {
-              primary: { healthy: false, error: timeoutError.message }
-            }
+              primary: { healthy: false, error: timeoutError.message },
+            },
           },
           redis: {
             healthy: false,
             nodes: {
               cache: { healthy: false, error: timeoutError.message },
-              session: { healthy: false, error: timeoutError.message }
-            }
+              session: { healthy: false, error: timeoutError.message },
+            },
           },
           storage: {
             healthy: false,
             bucket: 'unknown',
             region: 'unknown',
-            error: timeoutError.message
-          }
-        }
+            error: timeoutError.message,
+          },
+        },
       });
       return;
     }
@@ -174,7 +176,7 @@ app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
     message: error.message,
     stack: error.stack,
     method: req.method,
-    url: req.originalUrl
+    url: req.originalUrl,
   });
 
   if (res.headersSent) {

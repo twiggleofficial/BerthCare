@@ -80,10 +80,10 @@ const shouldRejectUnauthorized = (): boolean => {
 
 const createRetryStrategy = (): ((attempt: number) => number | null) => {
   const baseDelayMs = parseInteger(process.env.REDIS_RETRY_BASE_MS, DEFAULT_RETRY_BASE_DELAY_MS, {
-    min: 10
+    min: 10,
   });
   const maxDelayMs = parseInteger(process.env.REDIS_RETRY_MAX_MS, DEFAULT_RETRY_MAX_DELAY_MS, {
-    min: baseDelayMs
+    min: baseDelayMs,
   });
   const maxAttempts = parseOptionalInteger(process.env.REDIS_MAX_RETRY_ATTEMPTS, { min: 1 });
 
@@ -104,9 +104,13 @@ const buildRedisOptions = (keyPrefix?: string): RedisOptions => {
   const port = parseInteger(process.env.REDIS_PORT, DEFAULT_REDIS_PORT, { min: 1, max: 65_535 });
   const db = parseInteger(process.env.REDIS_DB, DEFAULT_REDIS_DB, { min: 0 });
   const password = process.env.REDIS_PASSWORD;
-  const connectTimeout = parseInteger(process.env.REDIS_CONNECT_TIMEOUT_MS, DEFAULT_CONNECT_TIMEOUT_MS, {
-    min: 100
-  });
+  const connectTimeout = parseInteger(
+    process.env.REDIS_CONNECT_TIMEOUT_MS,
+    DEFAULT_CONNECT_TIMEOUT_MS,
+    {
+      min: 100,
+    }
+  );
   const keepAlive = parseOptionalInteger(process.env.REDIS_KEEP_ALIVE_MS, { min: 0 });
   const maxRetriesPerRequest = parseInteger(
     process.env.REDIS_MAX_RETRIES_PER_REQUEST,
@@ -140,7 +144,7 @@ const buildRedisOptions = (keyPrefix?: string): RedisOptions => {
     keyPrefix: keyPrefix ? ensurePrefix(keyPrefix) : undefined,
     maxRetriesPerRequest,
     connectTimeout,
-    showFriendlyErrorStack: process.env.NODE_ENV !== 'production'
+    showFriendlyErrorStack: process.env.NODE_ENV !== 'production',
   };
 
   if (password) {
@@ -153,7 +157,7 @@ const buildRedisOptions = (keyPrefix?: string): RedisOptions => {
 
   if (shouldUseTls()) {
     options.tls = {
-      rejectUnauthorized: shouldRejectUnauthorized()
+      rejectUnauthorized: shouldRejectUnauthorized(),
     };
   }
 
@@ -171,7 +175,7 @@ const attachLogging = (client: RedisClient, role: RedisRole): void => {
 
   client.on('error', (error: Error) => {
     logger.error(`Redis (${role}) error`, {
-      message: error.message
+      message: error.message,
     });
   });
 
@@ -181,7 +185,7 @@ const attachLogging = (client: RedisClient, role: RedisRole): void => {
 
   client.on('reconnecting', (delay: number) => {
     logger.warn(`Redis (${role}) attempting reconnect`, {
-      delayMs: delay
+      delayMs: delay,
     });
   });
 };
@@ -222,7 +226,10 @@ export const getSessionClient = (): RedisClient => {
   return sessionClient;
 };
 
-const measureHealth = async (client: RedisClient, label: 'cache' | 'session'): Promise<HealthCheckDetails> => {
+const measureHealth = async (
+  client: RedisClient,
+  label: 'cache' | 'session'
+): Promise<HealthCheckDetails> => {
   const start = process.hrtime.bigint();
 
   try {
@@ -231,18 +238,18 @@ const measureHealth = async (client: RedisClient, label: 'cache' | 'session'): P
 
     return {
       healthy: true,
-      latencyMs: Number(durationMs.toFixed(3))
+      latencyMs: Number(durationMs.toFixed(3)),
     };
   } catch (error) {
     const err = error as Error;
 
     logger.warn(`Redis (${label}) health check failed`, {
-      message: err.message
+      message: err.message,
     });
 
     return {
       healthy: false,
-      error: err.message
+      error: err.message,
     };
   }
 };
@@ -255,8 +262,8 @@ export const checkRedisConnection = async (): Promise<RedisHealth> => {
     healthy: cacheHealth.healthy && sessionHealth.healthy,
     nodes: {
       cache: cacheHealth,
-      session: sessionHealth
-    }
+      session: sessionHealth,
+    },
   };
 };
 
@@ -271,7 +278,7 @@ const closeClient = async (client: RedisClient | undefined, role: RedisRole): Pr
   } catch (error) {
     const err = error as Error;
     logger.error(`Failed to close Redis (${role}) connection`, {
-      message: err.message
+      message: err.message,
     });
   }
 };
@@ -280,7 +287,7 @@ export const closeRedisConnections = async (): Promise<void> => {
   await Promise.all([
     closeClient(cacheClient, 'cache'),
     closeClient(sessionClient, 'session'),
-    closeClient(primaryClient, 'primary')
+    closeClient(primaryClient, 'primary'),
   ]);
 
   cacheClient = undefined;

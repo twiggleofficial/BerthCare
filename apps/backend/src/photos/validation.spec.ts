@@ -18,9 +18,9 @@ describe('photo upload validation', () => {
           originalBytes: '1000000',
           compressedBytes: 750000,
           width: 4032,
-          height: '3024'
-        }
-      }
+          height: '3024',
+        },
+      },
     });
 
     expect(result.ok).toBe(true);
@@ -44,7 +44,7 @@ describe('photo upload validation', () => {
       originalBytes: 1_000_000,
       compressedBytes: 750_000,
       width: 4032,
-      height: 3024
+      height: 3024,
     });
   });
 
@@ -58,9 +58,9 @@ describe('photo upload validation', () => {
         capturedAt: 'not-a-date',
         compression: {
           codec: 'bmp',
-          quality: 200
-        }
-      }
+          quality: 200,
+        },
+      },
     });
 
     expect(result.ok).toBe(false);
@@ -75,9 +75,8 @@ describe('photo upload validation', () => {
         'visitId is required',
         'expiresInSeconds must be between 60 and 3600',
         'metadata.capturedAt must be an ISO 8601 date string',
-        'metadata.compression.codec must be one of jpeg, heic, webp, png'
+        'metadata.compression.codec must be one of jpeg, heic, webp, png',
       ])
     );
   });
 });
-

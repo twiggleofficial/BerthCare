@@ -36,7 +36,7 @@ const config = {
   dir: 'apps/backend/migrations',
   migrationsTable: process.env.DB_MIGRATIONS_TABLE ?? DEFAULT_MIGRATIONS_TABLE,
   migrationFileLanguage: 'js',
-  databaseUrl: buildConnectionString()
+  databaseUrl: buildConnectionString(),
 };
 
 if (process.env.DB_SCHEMA) {

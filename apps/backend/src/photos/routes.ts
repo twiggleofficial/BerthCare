@@ -12,7 +12,7 @@ photoRouter.post('/upload-url', async (req: Request, res: Response) => {
   if (!validation.ok) {
     res.status(400).json({
       message: 'Invalid request body',
-      errors: validation.errors
+      errors: validation.errors,
     });
     return;
   }
@@ -26,7 +26,7 @@ photoRouter.post('/upload-url', async (req: Request, res: Response) => {
       visitId: payload.visitId,
       caregiverId: payload.caregiverId,
       metadata: payload.metadata,
-      expiresInSeconds: payload.expiresInSeconds
+      expiresInSeconds: payload.expiresInSeconds,
     });
 
     res.status(200).json({
@@ -34,16 +34,16 @@ photoRouter.post('/upload-url', async (req: Request, res: Response) => {
       photoKey: result.photoKey,
       expiresIn: result.expiresInSeconds,
       expiresAt: result.expiresAt,
-      bucket: result.bucket
+      bucket: result.bucket,
     });
     return;
   } catch (error) {
     logger.error('Failed to generate photo upload URL', {
-      error: error instanceof Error ? { message: error.message, stack: error.stack } : error
+      error: error instanceof Error ? { message: error.message, stack: error.stack } : error,
     });
 
     const responseBody: { error: string; details?: string } = {
-      error: 'Failed to generate upload URL'
+      error: 'Failed to generate upload URL',
     };
 
     if (process.env.NODE_ENV !== 'production' && error instanceof Error) {

@@ -74,23 +74,32 @@ const resolvePresignedTtl = (override?: number): number => {
     return override;
   }
 
-  return parseInteger(process.env.S3_PRESIGNED_TTL_SECONDS, DEFAULT_PRESIGNED_TTL_SECONDS, { min: 60 });
+  return parseInteger(process.env.S3_PRESIGNED_TTL_SECONDS, DEFAULT_PRESIGNED_TTL_SECONDS, {
+    min: 60,
+  });
 };
 
 const buildS3Config = (): S3ClientConfig => {
   const region = resolveRegion();
   const forcePathStyle = parseBoolean(process.env.S3_FORCE_PATH_STYLE, false);
   const endpoint = process.env.S3_ENDPOINT;
-  const requestTimeout = parseInteger(process.env.S3_REQUEST_TIMEOUT_MS, DEFAULT_REQUEST_TIMEOUT_MS, { min: 1000 });
-  const maxAttempts = parseInteger(process.env.S3_MAX_ATTEMPTS, DEFAULT_MAX_ATTEMPTS, { min: 1, max: 10 });
+  const requestTimeout = parseInteger(
+    process.env.S3_REQUEST_TIMEOUT_MS,
+    DEFAULT_REQUEST_TIMEOUT_MS,
+    { min: 1000 }
+  );
+  const maxAttempts = parseInteger(process.env.S3_MAX_ATTEMPTS, DEFAULT_MAX_ATTEMPTS, {
+    min: 1,
+    max: 10,
+  });
 
   const config: S3ClientConfig = {
     region,
     maxAttempts,
     requestHandler: new NodeHttpHandler({
       connectionTimeout: requestTimeout,
-      requestTimeout
-    })
+      requestTimeout,
+    }),
   };
 
   if (endpoint) {
@@ -116,7 +125,7 @@ const ensureS3Client = (): S3Client => {
     logger.info('S3 client initialised', {
       region: config.region,
       endpoint: config.endpoint ?? 'aws',
-      forcePathStyle: config.forcePathStyle === true
+      forcePathStyle: config.forcePathStyle === true,
     });
   }
 
@@ -125,7 +134,11 @@ const ensureS3Client = (): S3Client => {
 
 export const getS3Client = (): S3Client => ensureS3Client();
 
-export const buildPhotoStorageKey = ({ visitId, extension, capturedAt }: PhotoKeyOptions): string => {
+export const buildPhotoStorageKey = ({
+  visitId,
+  extension,
+  capturedAt,
+}: PhotoKeyOptions): string => {
   const normalisedExtension = normaliseExtension(extension);
   const safeVisitId = visitId.trim().replace(/[^a-zA-Z0-9-_]/g, '_');
   const timestamp =
@@ -139,9 +152,12 @@ export const buildPhotoStorageKey = ({ visitId, extension, capturedAt }: PhotoKe
   return `visits/${safeVisitId}/${timestamp}-${randomUUID()}${suffix}`;
 };
 
-const buildPhotoMetadata = (visitId: string, metadata?: Omit<PhotoMetadataInput, 'visitId'>): Record<string, string> => {
+const buildPhotoMetadata = (
+  visitId: string,
+  metadata?: Omit<PhotoMetadataInput, 'visitId'>
+): Record<string, string> => {
   const result: Record<string, string> = {
-    visit_id: visitId
+    visit_id: visitId,
   };
 
   if (!metadata) {
@@ -153,7 +169,8 @@ const buildPhotoMetadata = (visitId: string, metadata?: Omit<PhotoMetadataInput,
   }
 
   if (metadata.capturedAt) {
-    const capturedAt = metadata.capturedAt instanceof Date ? metadata.capturedAt : new Date(metadata.capturedAt);
+    const capturedAt =
+      metadata.capturedAt instanceof Date ? metadata.capturedAt : new Date(metadata.capturedAt);
     result.captured_at = capturedAt.toISOString();
   }
 
@@ -189,7 +206,11 @@ const buildPhotoMetadata = (visitId: string, metadata?: Omit<PhotoMetadataInput,
       result.image_height = height.toString();
     }
 
-    if (typeof originalBytes === 'number' && typeof compressedBytes === 'number' && compressedBytes > 0) {
+    if (
+      typeof originalBytes === 'number' &&
+      typeof compressedBytes === 'number' &&
+      compressedBytes > 0
+    ) {
       const ratio = originalBytes / compressedBytes;
       result.compression_ratio = ratio.toFixed(2);
     }
@@ -205,7 +226,7 @@ export const generatePhotoUploadUrl = async ({
   caregiverId,
   metadata,
   expiresInSeconds,
-  bucket
+  bucket,
 }: GeneratePhotoUploadUrlInput): Promise<GeneratePhotoUploadUrlResult> => {
   const client = ensureS3Client();
   const resolvedBucket = resolveBucket(bucket);
@@ -214,7 +235,7 @@ export const generatePhotoUploadUrl = async ({
   const photoKey = buildPhotoStorageKey({
     visitId,
     extension,
-    capturedAt: metadata?.capturedAt
+    capturedAt: metadata?.capturedAt,
   });
 
   const ttl = resolvePresignedTtl(expiresInSeconds);
@@ -225,8 +246,8 @@ export const generatePhotoUploadUrl = async ({
     ContentType: contentType,
     Metadata: buildPhotoMetadata(visitId, {
       ...metadata,
-      caregiverId
-    })
+      caregiverId,
+    }),
   });
 
   const uploadUrl = await getSignedUrl(client, command, { expiresIn: ttl });
@@ -236,7 +257,7 @@ export const generatePhotoUploadUrl = async ({
     photoKey,
     bucket: resolvedBucket,
     expiresInSeconds: ttl,
-    expiresAt: new Date(Date.now() + ttl * 1000).toISOString()
+    expiresAt: new Date(Date.now() + ttl * 1000).toISOString(),
   };
 };
 
@@ -250,21 +271,21 @@ export const checkPhotoBucketHealth = async (): Promise<StorageHealth> => {
     return {
       healthy: true,
       bucket,
-      region
+      region,
     };
   } catch (error) {
     const err = error as Error;
 
     logger.warn('S3 head bucket failed', {
       bucket,
-      message: err.message
+      message: err.message,
     });
 
     return {
       healthy: false,
       bucket,
       region,
-      error: err.message
+      error: err.message,
     };
   }
 };

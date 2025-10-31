@@ -1,7 +1,4 @@
-import {
-  type PhotoCompressionMetadata,
-  type PhotoMetadataInput
-} from '../storage/s3';
+import { type PhotoCompressionMetadata, type PhotoMetadataInput } from '../storage/s3';
 
 export type GenerateUploadUrlRequest = {
   fileName?: unknown;
@@ -30,7 +27,11 @@ const allowedCodecs: PhotoCompressionMetadata['codec'][] = ['jpeg', 'heic', 'web
 const isPositiveNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
 
-const parseOptionalNumber = (value: unknown, errors: string[], fieldPath: string): number | undefined => {
+const parseOptionalNumber = (
+  value: unknown,
+  errors: string[],
+  fieldPath: string
+): number | undefined => {
   if (value === undefined || value === null || value === '') {
     return undefined;
   }
@@ -94,13 +95,16 @@ const parseCompression = (
   const raw = value as Record<string, unknown>;
   const codecRaw = raw.codec;
 
-  if (typeof codecRaw !== 'string' || !allowedCodecs.includes(codecRaw as PhotoCompressionMetadata['codec'])) {
+  if (
+    typeof codecRaw !== 'string' ||
+    !allowedCodecs.includes(codecRaw as PhotoCompressionMetadata['codec'])
+  ) {
     errors.push(`${basePath}.codec must be one of ${allowedCodecs.join(', ')}`);
     return undefined;
   }
 
   const compression: PhotoCompressionMetadata = {
-    codec: codecRaw as PhotoCompressionMetadata['codec']
+    codec: codecRaw as PhotoCompressionMetadata['codec'],
   };
 
   const quality = parseOptionalNumber(raw.quality, errors, `${basePath}.quality`);
@@ -122,7 +126,11 @@ const parseCompression = (
     }
   }
 
-  const compressedBytes = parseOptionalNumber(raw.compressedBytes, errors, `${basePath}.compressedBytes`);
+  const compressedBytes = parseOptionalNumber(
+    raw.compressedBytes,
+    errors,
+    `${basePath}.compressedBytes`
+  );
   if (compressedBytes !== undefined) {
     if (compressedBytes > 0) {
       compression.compressedBytes = compressedBytes;
@@ -200,7 +208,9 @@ export const sanitisePhotoUploadPayload = (body: GenerateUploadUrlRequest): Vali
   const fileType = typeof body.fileType === 'string' ? body.fileType.trim() : '';
   const visitId = typeof body.visitId === 'string' ? body.visitId.trim() : '';
   const caregiverId =
-    typeof body.caregiverId === 'string' && body.caregiverId.trim() !== '' ? body.caregiverId.trim() : undefined;
+    typeof body.caregiverId === 'string' && body.caregiverId.trim() !== ''
+      ? body.caregiverId.trim()
+      : undefined;
   const expiresInSeconds = parseOptionalNumber(body.expiresInSeconds, errors, 'expiresInSeconds');
   const metadata = parseMetadata(body.metadata, errors);
 
@@ -232,7 +242,7 @@ export const sanitisePhotoUploadPayload = (body: GenerateUploadUrlRequest): Vali
       visitId,
       caregiverId,
       expiresInSeconds,
-      metadata
-    }
+      metadata,
+    },
   };
 };

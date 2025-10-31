@@ -17,10 +17,10 @@ export const logger = createLogger({
   transports: [
     new transports.Console({
       level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-      format: consoleFormat
-    })
+      format: consoleFormat,
+    }),
   ],
-  exitOnError: false
+  exitOnError: false,
 });
 
 export type Logger = typeof logger;
