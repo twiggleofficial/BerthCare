@@ -1,0 +1,6 @@
+# Assign default reviewers for all changes
+* @BerthCare/engineering-leads @BerthCare/product-leads
+
+# Documentation stewardship
+/project-documentation/ @BerthCare/architecture
+/design-documentation/ @BerthCare/design
