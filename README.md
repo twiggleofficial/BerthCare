@@ -16,20 +16,30 @@ Key tenets from the blueprint:
 ## Repository Structure
 
 ```
+apps/
+  backend/               Node.js service scaffolding managed by Nx
+  mobile/                React Native app scaffolding managed by Nx
+libs/
+  shared/
+    care-plan/           Shared TypeScript domain utilities
+docs/                    Workspace documentation (RFCs, runbooks, ADRs)
 project-documentation/   Planning, architecture, and technical blueprints
-design-documentation/   Product and UX assets supporting the caregiver journey
+design-documentation/    Product and UX assets supporting the caregiver journey
 ```
-
-Shared package workspaces (mobile, server, infrastructure) will be introduced in subsequent milestones as the monorepo is scaffolded.
 
 ## Initial Setup
 
 1. Clone the GitHub repository once created.
 2. Install the required toolchain:
    - Node.js 20 LTS (apps and tooling)
-   - Yarn or pnpm (workspace package management)
+   - pnpm (workspace package management)
    - Expo CLI (React Native)
-3. Follow forthcoming workspace READMEs for domain-specific setup steps.
+3. Install dependencies with `pnpm install`.
+4. Explore the project graph with `pnpm nx graph` and run workspace-wide commands:
+   - `pnpm lint` runs linting for all projects via Nx orchestration.
+   - `pnpm test` runs all registered Jest targets.
+   - `pnpm typecheck` performs TypeScript checks across the workspace.
+5. Follow forthcoming workspace READMEs for domain-specific setup steps.
 
 ## Governance
 
