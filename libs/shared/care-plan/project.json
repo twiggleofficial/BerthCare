@@ -1,0 +1,30 @@
+{
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "name": "shared-care-plan",
+  "projectType": "library",
+  "sourceRoot": "libs/shared/care-plan/src",
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": ["libs/shared/care-plan/src/**/*.ts"]
+      }
+    },
+    "typecheck": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{workspaceRoot}/dist/libs/shared/care-plan"],
+      "options": {
+        "tsConfig": "libs/shared/care-plan/tsconfig.lib.json"
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/shared/care-plan"],
+      "options": {
+        "jestConfig": "libs/shared/care-plan/jest.config.cjs",
+        "passWithNoTests": false
+      }
+    }
+  },
+  "tags": ["scope:shared", "type:library"]
+}

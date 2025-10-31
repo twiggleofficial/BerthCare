@@ -1,0 +1,30 @@
+{
+  "name": "berthcare-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "nx": "nx",
+    "lint": "nx run-many --target=lint --all",
+    "format:check": "prettier --check \"apps/**/*.{ts,tsx,js,jsx,json}\" \"libs/**/*.{ts,tsx,js,jsx,json}\" \"docs/**/*.{ts,tsx,js,jsx,json,md}\" \"*.{ts,tsx,js,jsx,json,md}\"",
+    "typecheck": "nx run-many --target=typecheck --all",
+    "test": "nx run-many --target=test --all",
+    "audit": "pnpm audit --prod --dev"
+  },
+  "devDependencies": {
+    "@nx/eslint": "19.8.4",
+    "@nx/eslint-plugin": "19.8.4",
+    "@nx/jest": "19.8.4",
+    "@nx/js": "19.8.4",
+    "@types/jest": "^29.5.12",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "jest": "^29.7.0",
+    "nx": "19.8.4",
+    "prettier": "^3.2.5",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.4.5"
+  }
+}

@@ -43,3 +43,11 @@ logs/
 
 # OS
 Thumbs.db
+
+# Nx workspace cache
+.nx/
+
+# Terraform local state
+**/.terraform/
+terraform.tfstate
+terraform.tfstate.*
