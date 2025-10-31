@@ -81,7 +81,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Setup Snyk CLI
-        uses: snyk/actions/setup@v4
+        uses: snyk/actions/setup@v3
       - name: Run Snyk Code scan
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
