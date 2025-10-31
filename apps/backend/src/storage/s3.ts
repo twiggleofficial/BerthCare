@@ -140,7 +140,7 @@ export const buildPhotoStorageKey = ({
   capturedAt,
 }: PhotoKeyOptions): string => {
   const normalisedExtension = normaliseExtension(extension);
-  const safeVisitId = visitId.trim().replace(/[^a-zA-Z0-9-_]/g, '_');
+  const safeVisitId = visitId.trim().replace(/[^a-zA-Z0-9_-]/g, '_');
   const timestamp =
     capturedAt instanceof Date
       ? capturedAt.toISOString()

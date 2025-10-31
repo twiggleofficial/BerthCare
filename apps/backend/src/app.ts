@@ -73,6 +73,20 @@ const rateLimiter = rateLimit({
 
 export const app = express();
 
+const trustProxyConfig = process.env.TRUST_PROXY ?? '1';
+const parsedTrustProxy = Number.parseInt(trustProxyConfig, 10);
+const trustProxyValue =
+  trustProxyConfig === 'true'
+    ? true
+    : trustProxyConfig === 'false'
+      ? false
+      : Number.isNaN(parsedTrustProxy)
+        ? trustProxyConfig
+        : parsedTrustProxy;
+
+// Ensure req.ip reflects the client address for any downstream middleware.
+app.set('trust proxy', trustProxyValue);
+
 app.disable('x-powered-by');
 app.use(helmet());
 app.use(

@@ -20,7 +20,7 @@ export const parseInteger = (
   const parsed = Number.parseInt(value ?? '', 10);
 
   if (Number.isNaN(parsed)) {
-    return fallback;
+    return clampNumber(fallback, options.min, options.max);
   }
 
   return clampNumber(parsed, options.min, options.max);
