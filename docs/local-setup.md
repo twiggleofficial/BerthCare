@@ -17,7 +17,9 @@ This guide provisions the data-layer dependencies described in the architecture 
    ```
 
 2. Update any secrets (`JWT_SECRET`, etc.) before using the configuration with real data.
-3. Ensure your shell loads the variables before starting the backend, for example:
+3. The backend reads connection details from `DB_*` variables. Optional `DB_REPLICA_*` values can be supplied later to point read-only traffic to a replica; if they are omitted the application falls back to the primary instance.
+4. S3 uploads use the AWS SDK v3 client. Override `AWS_S3_PHOTO_BUCKET`, `S3_PRESIGNED_TTL_SECONDS`, or `S3_FORCE_PATH_STYLE` if you need different bucket names, URL expiry times, or addressing modes while testing.
+5. Ensure your shell loads the variables before starting the backend, for example:
 
    ```bash
    set -a && source .env && set +a
@@ -105,6 +107,30 @@ Preserve persistent data unless state is corrupt (e.g., migrations broken). Use 
    ```
 
    The backend uses `DATABASE_URL`, `REDIS_URL`, and the LocalStack AWS credentials to connect to the services defined in `docker-compose.yml`.
+
+## Run Database Migrations
+
+The backend uses [`node-pg-migrate`](https://salsita.github.io/node-pg-migrate/) with Nx targets for common tasks.
+
+- Apply the latest migrations:
+
+  ```bash
+  pnpm nx run backend:migrate
+  ```
+
+- Roll back the previous migration:
+
+  ```bash
+  pnpm nx run backend:migrateDown
+  ```
+
+- Create a new migration file (pass a descriptive name after `--`):
+
+  ```bash
+  pnpm nx run backend:migrateCreate -- add_visits_table
+  ```
+
+All commands honour the same `DB_*` environment variables used by the application. When read-replica variables are present migrations continue to target the primary database.
 
 ## Working with LocalStack S3
 
