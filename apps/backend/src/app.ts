@@ -7,9 +7,11 @@ import helmet from 'helmet';
 import { checkRedisConnection } from './cache/redis';
 import { checkDatabaseConnection } from './database/pool';
 import { logger } from './logger';
+import { checkPhotoBucketHealth } from './storage/s3';
 import { authRouter } from './auth/routes';
 import { photoRouter } from './photos/routes';
-import { checkPhotoBucketHealth } from './storage/s3';
+import { clientsRouter } from './clients/routes';
+import { carePlanRouter } from './care-plans/routes';
 
 const SENSITIVE_QUERY_KEYS = new Set(['token', 'password', 'email']);
 const HEALTH_CHECK_TIMEOUT_MS = 5_000;
@@ -122,6 +124,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use('/v1', rateLimiter);
 app.use('/v1/auth', authRouter);
 app.use('/v1/photos', photoRouter);
+app.use('/v1/clients', clientsRouter);
+app.use('/v1/care-plans', carePlanRouter);
 
 app.get('/health', async (_req: Request, res: Response, next: NextFunction) => {
   const timeoutError = new Error(`Health check timed out after ${HEALTH_CHECK_TIMEOUT_MS}ms`);
