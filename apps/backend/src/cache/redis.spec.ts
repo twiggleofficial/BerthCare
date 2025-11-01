@@ -115,12 +115,13 @@ describe('redis connections', () => {
     getRedisClient();
 
     expect(RedisConstructor).toHaveBeenCalledTimes(1);
-    expect(RedisConstructor).toHaveBeenCalledWith(
-      'rediss://example.com:6380/1',
-      expect.objectContaining({
-        host: '127.0.0.1',
-      })
-    );
+    const [connectionUrl, options] = RedisConstructor.mock.calls[0] ?? [];
+    expect(connectionUrl).toBe('rediss://example.com:6380/1');
+    expect(options.host).toBeUndefined();
+    expect(options.port).toBeUndefined();
+    expect(options.db).toBeUndefined();
+    expect(options.password).toBeUndefined();
+    expect(options.connectionName).toBeDefined();
   });
 
   it('configures tls, keepAlive and retry strategy', () => {

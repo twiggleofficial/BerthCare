@@ -27,44 +27,8 @@ import { configureJwtKeySet, generateAccessToken, resetJwtKeySet } from 'libs/sh
 
 const ACTIVE_KEY_ID = 'logout-key-20240201';
 
-const PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
-MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDjFlWGDuyPFBjP
-h/3FNCDR/aWn1ASBLVnhC50nWwAGu5V8rQStN3FqdijhXY7DYNnruzDpVRIfb+PD
-y64Qj/5Y8UQEJ0imsw2SuwZotlvBemh4viQHu9tdF9lTPeyPwjZnHmJvHxMipx4c
-uQOt5NK3Iom8CQQPs05WGv2+YXgoX/gp6gJ+MpmqTutZugNngkPXRI8mDfdCcGYX
-GPW4IZpz3maSuXsctLUtIbRfjnson7GBuFjJHjd3eahENziYcLGIPJeQspdY0CvG
-IXE2oYPPIKiBd5i/jVq7KTPcb40s7NeKmXxZA8AYG2lEwUv0kp0j2YHeEQ8sTqz6
-moa768RrAgMBAAECggEBAJTLh5JlqP8/Tdp94vwaYf72UlsbgzAZRTE+aOTmrae7
-tgGRZOUS1Q/LCJJSuT6v8VqSt0PMaCmNKRKcHRvhHemtfMGz89i2rggc3+AwzQKD
-cHzdKcKfhucCv3XZt22i9f6vXBQvqlwkYIi1egGxU5iH2vQIfE7FUGj/GpBqUU8y
-Buzi2GzY6CJuRzLOgyFYlFKSyJowmAbEQCThZjFIeRLEDeYldfhXuxQANRxCpphZ
-ouPqJO8FZwuNJpdCrgggyJ8Og50FP86w52Emzwig3prVKPxH95MHpIyPPahrJ4Uw
-Msr3aCW/rlkZm1bVVgj8IJJmMIGuDtGORQ5zj1Zz9VECgYEA9AGyMMUaX0JkpY1V
-CxmxWHyTEi4CHHyP7CWKyuA8GqIKQbPDpCp7j10FokcppWmPhZeig4hns5jtBE6l
-0G014ALloFokB00eXd4mg0SCC3dXAKhGy8cSYCSFfZeJlPO2kwlv4jwYrNbHpHKN
-gKvbdj1XFX5z33+/vSVi4TdTRb8CgYEA7j++XPZb+yVn5W4GbrBZmGkdFjXQAu8C
-f9OqvZOMrqt9RMaeA4D61E75qoFFQfEvs1zvFwZ9myAjD5kiA5TEj6KObYEqjx20
-v7enqGDLGF0zwpJBMhulamC5hJmF+jl52PzEhgog6EGHuhZ1MuS9V7jjJlOIV3zJ
-v+jpHFG5ZFUCgYBINhRI8JvsYxasE9Z+MX1VhZB0yd7gFVD2funDPncrHpdQeGXG
-uLfWZp4bN1ow1Lufuo9iw8SE1xYVtzzFIPzXraPNP7/31S/OcccOBAFEaW37CNHi
-zqg2gbhrwaP6y+FVRG6zEjvvMqTkmu4bjUCmjmKuPr0GAKV60YygwCHJuwKBgQDH
-nrMicuyopjPCIQjUr3+yWsgbNuVdv+LpNXGGu90Q8PDZskztBKGlR7KasQtVb/8W
-mpRdR3vwgOG/jP/Z3kk/S+VoTORa23n5dKjORKOGe3kF2sMzd8SGOBrYxkViXcwB
-CfCjmlLuJxHQ0kZKaStYF7qC/1RqcU0dNcozhyn9rQKBgQCcl87gCdDMPEqZLgKC
-WF0JNl9XECa+7elMVhdCIK+bSgSyz91AuJ9oeR/B7ptfCA+nZRVcdGuzc6MRDVrU
-wcVfBbn8JausgtK62URFJyI4oVIf/LaUFDn79DPNu9tUw9whBzhbhcIHRR3KnmV8
-gms5cUOCDHrfE4oq3+dr3IqlnQ==
------END PRIVATE KEY-----`;
-
-const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4xZVhg7sjxQYz4f9xTQg
-0f2lp9QEgS1Z4QudJ1sABruVfK0ErTdxanYo4V2Ow2DZ67sw6VUSH2/jw8uuEI/+
-WPFEBCdIprMNkrsGaLZbwXpoeL4kB7vbXRfZUz3sj8I2Zx5ibx8TIqceHLkDreTS
-tyKJvAkED7NOVhr9vmF4KF/4KeoCfjKZqk7rWboDZ4JD10SPJg33QnBmFxj1uCGa
-c95mkrl7HLS1LSG0X457KJ+xgbhYyR43d3moRDc4mHCxiDyXkLKXWNArxiFxNqGD
-zyCogXeYv41auykz3G+NLOzXipl8WQPAGBtpRMFL9JKdI9mB3hEPLE6s+pqGu+vE
-awIDAQAB
------END PUBLIC KEY-----`;
+let testPrivateKey: string;
+let testPublicKey: string;
 
 type MockClient = {
   query: jest.Mock<
@@ -88,13 +52,16 @@ let server: Server;
 let baseUrl: string;
 
 const configureKeySet = () => {
+  if (!testPrivateKey || !testPublicKey) {
+    throw new Error('JWT test keys have not been initialised');
+  }
   configureJwtKeySet({
     activeKeyId: ACTIVE_KEY_ID,
     keys: [
       {
         id: ACTIVE_KEY_ID,
-        privateKey: PRIVATE_KEY,
-        publicKey: PUBLIC_KEY,
+        privateKey: testPrivateKey,
+        publicKey: testPublicKey,
       },
     ],
   });
@@ -132,6 +99,19 @@ const performRequest = async (body: Record<string, unknown>, token: string) =>
   });
 
 beforeAll(async () => {
+  const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    publicKeyEncoding: {
+      type: 'spki',
+      format: 'pem',
+    },
+    privateKeyEncoding: {
+      type: 'pkcs8',
+      format: 'pem',
+    },
+  });
+  testPrivateKey = privateKey;
+  testPublicKey = publicKey;
   configureKeySet();
 
   server = app.listen(0);

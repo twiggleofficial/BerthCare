@@ -94,14 +94,12 @@ const parseCompression = (
 
   const raw = value as Record<string, unknown>;
   const codecRaw = raw.codec;
+  const codec =
+    typeof codecRaw === 'string' && allowedCodecs.includes(codecRaw as PhotoCompressionMetadata['codec'])
+      ? (codecRaw as PhotoCompressionMetadata['codec'])
+      : undefined;
 
-  let codec: PhotoCompressionMetadata['codec'] | undefined;
-  if (
-    typeof codecRaw === 'string' &&
-    allowedCodecs.includes(codecRaw as PhotoCompressionMetadata['codec'])
-  ) {
-    codec = codecRaw as PhotoCompressionMetadata['codec'];
-  } else {
+  if (!codec) {
     errors.push(`${basePath}.codec must be one of ${allowedCodecs.join(', ')}`);
   }
 

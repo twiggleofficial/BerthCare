@@ -46,6 +46,8 @@ const generateRefreshTokenMock = generateRefreshToken as jest.MockedFunction<
 >;
 
 const API_PATH = '/v1/auth/register';
+const ADMIN_SECRET = 'test-registration-secret';
+const ADMIN_SECRET_HEADER = 'x-admin-registration-secret';
 
 const resetLimiter = () => {
   if ('resetKey' in registerRateLimiter && typeof registerRateLimiter.resetKey === 'function') {
@@ -61,6 +63,7 @@ const resetLimiter = () => {
 describe('POST /v1/auth/register', () => {
   let server: Server;
   let baseUrl: string;
+  let originalAdminSecret: string | undefined;
 
   const createMockClient = ({
     onUserInsert,
@@ -114,15 +117,31 @@ describe('POST /v1/auth/register', () => {
   };
 
   const performRequest = async (body: Record<string, unknown>) =>
-    fetch(`${baseUrl}${API_PATH}`, {
+    performRequestWithSecret(body, ADMIN_SECRET);
+
+  const performRequestWithSecret = async (
+    body: Record<string, unknown>,
+    secret: string | null
+  ) => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (secret !== null) {
+      headers[ADMIN_SECRET_HEADER] = secret;
+    }
+
+    return fetch(`${baseUrl}${API_PATH}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(body),
     });
+  };
 
   beforeAll(async () => {
+    originalAdminSecret = process.env.ADMIN_REGISTRATION_SECRET;
+    process.env.ADMIN_REGISTRATION_SECRET = ADMIN_SECRET;
+
     server = app.listen(0);
 
     await new Promise<void>((resolve) => {
@@ -134,6 +153,12 @@ describe('POST /v1/auth/register', () => {
   });
 
   afterAll(async () => {
+    if (originalAdminSecret === undefined) {
+      delete process.env.ADMIN_REGISTRATION_SECRET;
+    } else {
+      process.env.ADMIN_REGISTRATION_SECRET = originalAdminSecret;
+    }
+
     await new Promise<void>((resolve, reject) => {
       server.close((error) => {
         if (error) {
@@ -278,5 +303,44 @@ describe('POST /v1/auth/register', () => {
 
     // Only the successful attempts should reach the database layer.
     expect(invocation).toBe(5);
+  });
+
+  it('rejects requests without the admin registration secret', async () => {
+    const response = await performRequestWithSecret(
+      {
+        email: 'no-secret@example.com',
+        password: 'Str0ngPass1',
+        firstName: 'Nora',
+        lastName: 'NoSecret',
+        zoneId: 'd9b256b7-9897-4669-98a0-5b04171aaabc',
+        deviceId: 'device-nosecret',
+      },
+      null
+    );
+
+    expect(response.status).toBe(403);
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(body).toEqual({ message: 'Admin registration is not permitted' });
+    expect(runWithClientMock).not.toHaveBeenCalled();
+  });
+
+  it('responds with 503 when admin registration is disabled', async () => {
+    delete process.env.ADMIN_REGISTRATION_SECRET;
+
+    const response = await performRequest({
+      email: 'disabled@example.com',
+      password: 'Str0ngPass1',
+      firstName: 'Diana',
+      lastName: 'Disabled',
+      zoneId: '5d0cffae-ec4b-4a99-a846-1b213da685c2',
+      deviceId: 'device-disabled',
+    });
+
+    expect(response.status).toBe(503);
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(body).toEqual({ message: 'Admin registration is disabled' });
+    expect(runWithClientMock).not.toHaveBeenCalled();
+
+    process.env.ADMIN_REGISTRATION_SECRET = ADMIN_SECRET;
   });
 });

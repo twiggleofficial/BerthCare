@@ -1,9 +1,12 @@
 import { createLogger, format, transports } from 'winston';
+import { inspect } from 'node:util';
 
 const { combine, errors, json, splat, timestamp, printf, colorize } = format;
 
 const consolePrintf = printf(({ level, message, timestamp: time, ...meta }) => {
-  const metaString = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+  const metaString = Object.keys(meta).length
+    ? ` ${inspect(meta, { depth: null, compact: false, breakLength: Infinity })}`
+    : '';
   return `[${time}] ${level}: ${message}${metaString}`;
 });
 

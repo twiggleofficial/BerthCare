@@ -25,6 +25,7 @@ type DatabaseError = Error & { code?: string };
 const ADMIN_ROLE = 'admin';
 const UNIQUE_VIOLATION_CODE = '23505';
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const ADMIN_REGISTRATION_SECRET_HEADER = 'x-admin-registration-secret';
 
 const hashRefreshToken = (token: string): string =>
   crypto.createHash('sha256').update(token).digest('hex');
@@ -195,6 +196,23 @@ authRouter.post(
   '/register',
   registerRateLimiter,
   async (req: Request, res: Response, next: NextFunction) => {
+    const adminRegistrationSecret = process.env.ADMIN_REGISTRATION_SECRET;
+
+    if (!adminRegistrationSecret) {
+      res.status(503).json({ message: 'Admin registration is disabled' });
+      return;
+    }
+
+    const providedSecretHeader = req.headers[ADMIN_REGISTRATION_SECRET_HEADER];
+    const providedSecret = Array.isArray(providedSecretHeader)
+      ? providedSecretHeader[0]
+      : providedSecretHeader;
+
+    if (providedSecret !== adminRegistrationSecret) {
+      res.status(403).json({ message: 'Admin registration is not permitted' });
+      return;
+    }
+
     const validation = sanitiseRegistrationPayload(req.body ?? {});
 
     if (!validation.ok) {

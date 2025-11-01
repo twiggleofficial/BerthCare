@@ -194,6 +194,13 @@ const createRedisClient = (role: RedisRole, keyPrefix?: string): RedisClient => 
   const url = process.env.REDIS_URL;
   const options = buildRedisOptions(keyPrefix);
 
+  if (url) {
+    delete options.host;
+    delete options.port;
+    delete options.db;
+    delete options.password;
+  }
+
   const client = url ? new Redis(url, options) : new Redis(options);
   attachLogging(client, role);
 
