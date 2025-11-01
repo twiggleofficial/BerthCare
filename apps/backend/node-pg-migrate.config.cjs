@@ -23,7 +23,7 @@ const buildConnectionString = () => {
 
   if (process.env.DB_USE_SSL === 'true') {
     const rejectUnauthorized = process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false';
-    params.push(`sslmode=${rejectUnauthorized ? 'require' : 'prefer'}`);
+    params.push(`sslmode=${rejectUnauthorized ? 'verify-full' : 'require'}`);
   }
 
   const searchParams = params.length > 0 ? `?${params.join('&')}` : '';

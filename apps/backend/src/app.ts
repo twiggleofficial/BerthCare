@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import { checkRedisConnection } from './cache/redis';
 import { checkDatabaseConnection } from './database/pool';
 import { logger } from './logger';
+import { authRouter } from './auth/routes';
 import { photoRouter } from './photos/routes';
 import { checkPhotoBucketHealth } from './storage/s3';
 
@@ -105,6 +106,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use('/v1', rateLimiter);
+app.use('/v1/auth', authRouter);
 app.use('/v1/photos', photoRouter);
 
 app.get('/health', async (_req: Request, res: Response, next: NextFunction) => {
@@ -188,3 +190,8 @@ app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
 
   res.status(status).json({ message });
 });
+
+export const __TESTING__ = {
+  sanitizeUrl,
+  withTimeout,
+};

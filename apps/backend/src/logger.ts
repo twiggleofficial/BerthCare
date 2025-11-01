@@ -2,14 +2,15 @@ import { createLogger, format, transports } from 'winston';
 
 const { combine, errors, json, splat, timestamp, printf, colorize } = format;
 
-const consoleFormat = combine(
-  colorize(),
-  timestamp(),
-  printf(({ level, message, timestamp: time, ...meta }) => {
-    const metaString = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
-    return `[${time}] ${level}: ${message}${metaString}`;
-  })
-);
+const consolePrintf = printf(({ level, message, timestamp: time, ...meta }) => {
+  const metaString = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+  return `[${time}] ${level}: ${message}${metaString}`;
+});
+
+const consoleFormat =
+  process.env.NODE_ENV !== 'production'
+    ? combine(colorize(), timestamp(), consolePrintf)
+    : combine(timestamp(), consolePrintf);
 
 export const logger = createLogger({
   level: process.env.LOG_LEVEL ?? 'info',

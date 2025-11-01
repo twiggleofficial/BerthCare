@@ -95,32 +95,32 @@ const parseCompression = (
   const raw = value as Record<string, unknown>;
   const codecRaw = raw.codec;
 
+  let codec: PhotoCompressionMetadata['codec'] | undefined;
   if (
-    typeof codecRaw !== 'string' ||
-    !allowedCodecs.includes(codecRaw as PhotoCompressionMetadata['codec'])
+    typeof codecRaw === 'string' &&
+    allowedCodecs.includes(codecRaw as PhotoCompressionMetadata['codec'])
   ) {
+    codec = codecRaw as PhotoCompressionMetadata['codec'];
+  } else {
     errors.push(`${basePath}.codec must be one of ${allowedCodecs.join(', ')}`);
-    return undefined;
   }
-
-  const compression: PhotoCompressionMetadata = {
-    codec: codecRaw as PhotoCompressionMetadata['codec'],
-  };
 
   const quality = parseOptionalNumber(raw.quality, errors, `${basePath}.quality`);
 
+  let resolvedQuality: number | undefined;
   if (quality !== undefined) {
     if (quality < 0 || quality > 100) {
       errors.push(`${basePath}.quality must be between 0 and 100`);
     } else {
-      compression.quality = quality;
+      resolvedQuality = quality;
     }
   }
 
   const originalBytes = parseOptionalNumber(raw.originalBytes, errors, `${basePath}.originalBytes`);
+  let resolvedOriginalBytes: number | undefined;
   if (originalBytes !== undefined) {
     if (originalBytes > 0) {
-      compression.originalBytes = originalBytes;
+      resolvedOriginalBytes = originalBytes;
     } else {
       errors.push(`${basePath}.originalBytes must be a positive number greater than 0`);
     }
@@ -131,30 +131,57 @@ const parseCompression = (
     errors,
     `${basePath}.compressedBytes`
   );
+  let resolvedCompressedBytes: number | undefined;
   if (compressedBytes !== undefined) {
     if (compressedBytes > 0) {
-      compression.compressedBytes = compressedBytes;
+      resolvedCompressedBytes = compressedBytes;
     } else {
       errors.push(`${basePath}.compressedBytes must be a positive number greater than 0`);
     }
   }
 
   const width = parseOptionalNumber(raw.width, errors, `${basePath}.width`);
+  let resolvedWidth: number | undefined;
   if (width !== undefined) {
     if (width > 0) {
-      compression.width = width;
+      resolvedWidth = width;
     } else {
       errors.push(`${basePath}.width must be a positive number greater than 0`);
     }
   }
 
   const height = parseOptionalNumber(raw.height, errors, `${basePath}.height`);
+  let resolvedHeight: number | undefined;
   if (height !== undefined) {
     if (height > 0) {
-      compression.height = height;
+      resolvedHeight = height;
     } else {
       errors.push(`${basePath}.height must be a positive number greater than 0`);
     }
+  }
+
+  if (!codec) {
+    return undefined;
+  }
+
+  const compression: PhotoCompressionMetadata = {
+    codec,
+  };
+
+  if (resolvedQuality !== undefined) {
+    compression.quality = resolvedQuality;
+  }
+  if (resolvedOriginalBytes !== undefined) {
+    compression.originalBytes = resolvedOriginalBytes;
+  }
+  if (resolvedCompressedBytes !== undefined) {
+    compression.compressedBytes = resolvedCompressedBytes;
+  }
+  if (resolvedWidth !== undefined) {
+    compression.width = resolvedWidth;
+  }
+  if (resolvedHeight !== undefined) {
+    compression.height = resolvedHeight;
   }
 
   return compression;

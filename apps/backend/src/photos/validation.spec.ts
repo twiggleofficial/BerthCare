@@ -75,6 +75,7 @@ describe('photo upload validation', () => {
         'visitId is required',
         'expiresInSeconds must be between 60 and 3600',
         'metadata.capturedAt must be an ISO 8601 date string',
+        'metadata.compression.quality must be between 0 and 100',
         'metadata.compression.codec must be one of jpeg, heic, webp, png',
       ])
     );

@@ -3,6 +3,7 @@ import { HeadBucketCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomUUID } from 'node:crypto';
 import { NodeHttpHandler } from '@smithy/node-http-handler';
+import { extname } from 'node:path';
 
 import { logger } from '../logger';
 import { normaliseExtension, parseBoolean, parseInteger } from 'libs/utils/parse';
@@ -141,12 +142,28 @@ export const buildPhotoStorageKey = ({
 }: PhotoKeyOptions): string => {
   const normalisedExtension = normaliseExtension(extension);
   const safeVisitId = visitId.trim().replace(/[^a-zA-Z0-9-_]/g, '_');
-  const timestamp =
-    capturedAt instanceof Date
-      ? capturedAt.toISOString()
-      : capturedAt
-        ? new Date(capturedAt).toISOString()
-        : new Date().toISOString();
+  if (!safeVisitId) {
+    throw new Error('Invalid visitId: value must contain at least one safe character');
+  }
+
+  let timestampDate: Date;
+  if (capturedAt instanceof Date || typeof capturedAt === 'string') {
+    const candidate = capturedAt instanceof Date ? capturedAt : new Date(capturedAt);
+
+    if (Number.isNaN(candidate.getTime())) {
+      logger.warn('Invalid capturedAt provided for photo key; falling back to current time', {
+        capturedAt,
+        visitId: safeVisitId,
+      });
+      timestampDate = new Date();
+    } else {
+      timestampDate = candidate;
+    }
+  } else {
+    timestampDate = new Date();
+  }
+
+  const timestamp = timestampDate.toISOString();
 
   const suffix = normalisedExtension ? `.${normalisedExtension}` : '';
   return `visits/${safeVisitId}/${timestamp}-${randomUUID()}${suffix}`;
@@ -171,7 +188,15 @@ const buildPhotoMetadata = (
   if (metadata.capturedAt) {
     const capturedAt =
       metadata.capturedAt instanceof Date ? metadata.capturedAt : new Date(metadata.capturedAt);
-    result.captured_at = capturedAt.toISOString();
+
+    if (Number.isNaN(capturedAt.getTime())) {
+      logger.warn('Invalid capturedAt metadata provided; skipping captured_at field', {
+        capturedAt: metadata.capturedAt,
+        visitId,
+      });
+    } else {
+      result.captured_at = capturedAt.toISOString();
+    }
   }
 
   if (metadata.deviceModel) {
@@ -231,7 +256,8 @@ export const generatePhotoUploadUrl = async ({
   const client = ensureS3Client();
   const resolvedBucket = resolveBucket(bucket);
 
-  const extension = fileName.split('.').pop() ?? '';
+  const rawExtension = extname(fileName);
+  const extension = rawExtension && rawExtension !== '.' ? rawExtension.slice(1) : '';
   const photoKey = buildPhotoStorageKey({
     visitId,
     extension,
