@@ -5,6 +5,7 @@
 import http from 'http';
 import type { AddressInfo } from 'net';
 import type { ErrorRequestHandler, Express, Request, Response } from 'express';
+import express from 'express';
 
 const mockCheckDatabaseConnection = jest.fn();
 const mockCheckRedisConnection = jest.fn();
@@ -22,15 +23,13 @@ jest.mock('./storage/s3', () => ({
   checkPhotoBucketHealth: mockCheckPhotoBucketHealth,
 }));
 
-jest.mock('./auth/routes', () => {
-  const express = require('express');
-  return { authRouter: express.Router() };
-});
+jest.mock('./auth/routes', () => ({
+  authRouter: express.Router(),
+}));
 
-jest.mock('./photos/routes', () => {
-  const express = require('express');
-  return { photoRouter: express.Router() };
-});
+jest.mock('./photos/routes', () => ({
+  photoRouter: express.Router(),
+}));
 
 const logger = {
   info: jest.fn(),
@@ -104,20 +103,21 @@ const loadApp = () => {
   return appModule!;
 };
 
+const isErrorHandler = (handle: unknown): handle is ErrorRequestHandler =>
+  typeof handle === 'function' && handle.length === 4;
+
 const getErrorHandler = (appInstance: Express): ErrorRequestHandler => {
   const stack: Array<{ handle?: unknown }> =
     ((appInstance as unknown as { _router?: { stack: Array<{ handle?: unknown }> } })._router
       ?.stack as Array<{ handle?: unknown }> | undefined) ?? [];
 
-  const layer = stack.find(
-    (entry) => typeof entry.handle === 'function' && (entry.handle as Function).length === 4
-  );
+  const layer = stack.find((entry) => isErrorHandler(entry.handle));
 
-  if (!layer || typeof layer.handle !== 'function') {
+  if (!layer || !isErrorHandler(layer.handle)) {
     throw new Error('Error handler middleware not found on app');
   }
 
-  return layer.handle as ErrorRequestHandler;
+  return layer.handle;
 };
 
 beforeEach(() => {
@@ -225,9 +225,9 @@ describe('app', () => {
   });
 
   it('returns timeout response when checks exceed allowed duration', async () => {
-    mockCheckDatabaseConnection.mockImplementation(() => new Promise(() => {}));
-    mockCheckRedisConnection.mockImplementation(() => new Promise(() => {}));
-    mockCheckPhotoBucketHealth.mockImplementation(() => new Promise(() => {}));
+    mockCheckDatabaseConnection.mockImplementation(() => new Promise(() => undefined));
+    mockCheckRedisConnection.mockImplementation(() => new Promise(() => undefined));
+    mockCheckPhotoBucketHealth.mockImplementation(() => new Promise(() => undefined));
 
     const originalSetTimeout = setTimeout;
     const timeoutSpy = jest
