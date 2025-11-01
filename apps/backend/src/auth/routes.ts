@@ -4,6 +4,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import type { JwtPayload } from 'jsonwebtoken';
+import type { PoolClient } from 'pg';
 
 import { hashPassword, verifyPassword } from 'libs/shared/auth-utils';
 import { generateAccessToken, generateRefreshToken, verifyToken } from 'libs/shared/jwt-utils';
@@ -54,6 +55,66 @@ const successResponse = (result: AuthResult) => ({
 });
 
 const refreshErrorResponse = { message: 'Invalid or expired refresh token' };
+
+type RefreshRotationClaims = {
+  userId: string;
+  role: string;
+  zoneId: string;
+};
+
+type RefreshRotationResult =
+  | { status: 'ok'; newRefreshToken: string }
+  | { status: 'not_found' | 'expired' | 'update_failed' };
+
+const rotateRefreshTokenInDb = async (
+  client: PoolClient,
+  hashedToken: string,
+  claims: RefreshRotationClaims
+): Promise<RefreshRotationResult> => {
+  const result = await client.query<{
+    user_id: string;
+    expires_at: Date | string;
+  }>(
+    `SELECT user_id, expires_at
+     FROM refresh_tokens
+     WHERE token_hash = $1
+     FOR UPDATE`,
+    [hashedToken]
+  );
+
+  const record = result.rows[0];
+
+  if (!record || record.user_id !== claims.userId) {
+    return { status: 'not_found' };
+  }
+
+  const expiresAt =
+    record.expires_at instanceof Date ? record.expires_at : new Date(record.expires_at);
+
+  if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
+    return { status: 'expired' };
+  }
+
+  const newRefreshToken = generateRefreshToken(claims);
+  const newRefreshTokenHash = hashRefreshToken(newRefreshToken);
+  const newExpiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL_MS);
+
+  const updateResult = await client.query(
+    `UPDATE refresh_tokens
+     SET token_hash = $1, expires_at = $2
+     WHERE token_hash = $3`,
+    [newRefreshTokenHash, newExpiresAt, hashedToken]
+  );
+
+  if (updateResult.rowCount === 0) {
+    return { status: 'update_failed' };
+  }
+
+  return {
+    status: 'ok',
+    newRefreshToken,
+  };
+};
 
 type AuthResult = {
   user: {
@@ -295,73 +356,34 @@ authRouter.post(
       const rotationResult = await runWithClient(async (client) => {
         await client.query('BEGIN');
         try {
-          const result = await client.query<{
-            user_id: string;
-            expires_at: Date | string;
-          }>(
-            `SELECT user_id, expires_at
-             FROM refresh_tokens
-             WHERE token_hash = $1
-             FOR UPDATE`,
-            [hashedToken]
-          );
-
-          const record = result.rows[0];
-
-          if (!record || record.user_id !== userId) {
-            await client.query('ROLLBACK');
-            return { status: 'not_found' } as const;
-          }
-
-          const expiresAt =
-            record.expires_at instanceof Date ? record.expires_at : new Date(record.expires_at);
-
-          if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
-            await client.query('ROLLBACK');
-            return { status: 'expired' } as const;
-          }
-
-          const newRefreshToken = generateRefreshToken({
+          const result = await rotateRefreshTokenInDb(client, hashedToken, {
             userId,
             role,
             zoneId,
           });
-          const newRefreshTokenHash = hashRefreshToken(newRefreshToken);
-          const newExpiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL_MS);
 
-          const updateResult = await client.query(
-            `UPDATE refresh_tokens
-             SET token_hash = $1, expires_at = $2
-             WHERE token_hash = $3`,
-            [newRefreshTokenHash, newExpiresAt, hashedToken]
-          );
-
-          if (updateResult.rowCount === 0) {
+          if (result.status === 'ok') {
+            await client.query('COMMIT');
+          } else {
             await client.query('ROLLBACK');
-            return { status: 'update_failed' } as const;
           }
 
-          await client.query('COMMIT');
-          return {
-            status: 'ok',
-            newRefreshToken,
-          } as const;
+          return result;
         } catch (txError) {
           await client.query('ROLLBACK');
           throw txError;
         }
       });
 
-      if (rotationResult.status === 'not_found' || rotationResult.status === 'expired') {
-        res.status(401).json(refreshErrorResponse);
-        return;
-      }
-
-      if (rotationResult.status === 'update_failed') {
-        logger.error('Failed to rotate refresh token', {
-          userId,
-        });
-        res.status(500).json({ message: 'Unable to refresh session' });
+      if (rotationResult.status !== 'ok') {
+        if (rotationResult.status === 'not_found' || rotationResult.status === 'expired') {
+          res.status(401).json(refreshErrorResponse);
+        } else {
+          logger.error('Failed to rotate refresh token', {
+            userId,
+          });
+          res.status(500).json({ message: 'Unable to refresh session' });
+        }
         return;
       }
 
@@ -371,9 +393,11 @@ authRouter.post(
         zoneId,
       });
 
+      const { newRefreshToken } = rotationResult;
+
       res.status(200).json({
         accessToken,
-        refreshToken: rotationResult.newRefreshToken,
+        refreshToken: newRefreshToken,
       });
     } catch (error) {
       logger.error('Failed to process refresh token', {

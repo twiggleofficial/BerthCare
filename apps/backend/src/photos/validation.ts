@@ -95,7 +95,8 @@ const parseCompression = (
   const raw = value as Record<string, unknown>;
   const codecRaw = raw.codec;
   const codec =
-    typeof codecRaw === 'string' && allowedCodecs.includes(codecRaw as PhotoCompressionMetadata['codec'])
+    typeof codecRaw === 'string' &&
+    allowedCodecs.includes(codecRaw as PhotoCompressionMetadata['codec'])
       ? (codecRaw as PhotoCompressionMetadata['codec'])
       : undefined;
 

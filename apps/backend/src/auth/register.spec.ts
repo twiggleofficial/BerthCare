@@ -119,10 +119,7 @@ describe('POST /v1/auth/register', () => {
   const performRequest = async (body: Record<string, unknown>) =>
     performRequestWithSecret(body, ADMIN_SECRET);
 
-  const performRequestWithSecret = async (
-    body: Record<string, unknown>,
-    secret: string | null
-  ) => {
+  const performRequestWithSecret = async (body: Record<string, unknown>, secret: string | null) => {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
