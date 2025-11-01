@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS clients (
 );
 
 CREATE INDEX IF NOT EXISTS idx_clients_zone_id ON clients(zone_id);
-CREATE INDEX IF NOT EXISTS idx_clients_last_name ON clients(last_name);
+CREATE INDEX IF NOT EXISTS idx_clients_last_name_first_name ON clients(last_name, first_name);
 
 CREATE OR REPLACE FUNCTION set_clients_updated_at_timestamp()
 RETURNS TRIGGER AS $$
