@@ -40,6 +40,15 @@ describe('S3 storage helpers', () => {
     expect(key).not.toContain(' ');
   });
 
+  it('buildPhotoStorageKey rejects visit ids that sanitise to an empty value', () => {
+    expect(() =>
+      buildPhotoStorageKey({
+        visitId: '   ',
+        extension: 'jpg',
+      })
+    ).toThrow('Invalid visitId');
+  });
+
   it('generatePhotoUploadUrl returns signed URL with metadata', async () => {
     const expiresInSeconds = 900;
     const result = await generatePhotoUploadUrl({
@@ -87,5 +96,29 @@ describe('S3 storage helpers', () => {
       image_height: '3024',
       compression_ratio: expect.any(String),
     });
+  });
+
+  it('generatePhotoUploadUrl skips captured_at metadata when provided datetime is invalid', async () => {
+    await generatePhotoUploadUrl({
+      fileName: 'photo.heic',
+      contentType: 'image/heic',
+      visitId: 'visit-123',
+      caregiverId: 'caregiver-789',
+      metadata: {
+        deviceModel: 'iPhone 15',
+        checksumSha256: 'abc123',
+        capturedAt: 'not-a-real-date',
+      },
+    });
+
+    expect(capturedCommand).toBeInstanceOf(PutObjectCommand);
+    const input = capturedCommand?.input;
+    expect(input?.Metadata).toMatchObject({
+      visit_id: 'visit-123',
+      caregiver_id: 'caregiver-789',
+      device_model: 'iPhone 15',
+      checksum_sha256: 'abc123',
+    });
+    expect(input?.Metadata?.captured_at).toBeUndefined();
   });
 });

@@ -195,18 +195,13 @@ const createRedisClient = (role: RedisRole, keyPrefix?: string): RedisClient => 
   const options = buildRedisOptions(keyPrefix);
 
   if (url) {
-    const sanitizedOptions = { ...options };
-    delete sanitizedOptions.host;
-    delete sanitizedOptions.port;
-    delete sanitizedOptions.db;
-
-    const client = new Redis(url, sanitizedOptions);
-    attachLogging(client, role);
-
-    return client;
+    delete options.host;
+    delete options.port;
+    delete options.db;
+    delete options.password;
   }
 
-  const client = new Redis(options);
+  const client = url ? new Redis(url, options) : new Redis(options);
   attachLogging(client, role);
 
   return client;

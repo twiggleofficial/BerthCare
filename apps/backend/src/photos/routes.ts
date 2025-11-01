@@ -3,8 +3,11 @@ import { Router, type Request, type Response } from 'express';
 import { generatePhotoUploadUrl } from '../storage/s3';
 import { logger } from '../logger';
 import { sanitisePhotoUploadPayload } from './validation';
+import { authenticateJwt } from '../auth/middleware';
 
 export const photoRouter = Router();
+
+photoRouter.use(authenticateJwt);
 
 photoRouter.post('/upload-url', async (req: Request, res: Response) => {
   const validation = sanitisePhotoUploadPayload(req.body);
@@ -46,7 +49,10 @@ photoRouter.post('/upload-url', async (req: Request, res: Response) => {
       error: 'Failed to generate upload URL',
     };
 
-    if (process.env.NODE_ENV !== 'production' && error instanceof Error) {
+    if (
+      error instanceof Error &&
+      (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')
+    ) {
       responseBody.details = error.message;
     }
 

@@ -185,9 +185,11 @@ export const checkDatabaseConnection = async (): Promise<DatabaseHealth> => {
 };
 
 export const closePool = async (): Promise<void> => {
-  await primaryPool.end();
+  const closePromises: Array<Promise<void>> = [primaryPool.end()];
 
   if (readReplicaPool) {
-    await readReplicaPool.end();
+    closePromises.push(readReplicaPool.end());
   }
+
+  await Promise.all(closePromises);
 };
