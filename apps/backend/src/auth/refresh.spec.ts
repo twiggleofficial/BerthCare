@@ -38,8 +38,12 @@ type MockClient = {
 };
 
 const runWithClientMock = runWithClient as jest.MockedFunction<typeof runWithClient>;
-const generateAccessTokenMock = generateAccessToken as jest.MockedFunction<typeof generateAccessToken>;
-const generateRefreshTokenMock = generateRefreshToken as jest.MockedFunction<typeof generateRefreshToken>;
+const generateAccessTokenMock = generateAccessToken as jest.MockedFunction<
+  typeof generateAccessToken
+>;
+const generateRefreshTokenMock = generateRefreshToken as jest.MockedFunction<
+  typeof generateRefreshToken
+>;
 const verifyTokenMock = verifyToken as jest.MockedFunction<typeof verifyToken>;
 
 let server: Server;

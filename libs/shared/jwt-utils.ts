@@ -1,4 +1,10 @@
-import jwt, { type Algorithm, type JwtHeader, type JwtPayload, type SignOptions, type VerifyOptions } from 'jsonwebtoken';
+import jwt, {
+  type Algorithm,
+  type JwtHeader,
+  type JwtPayload,
+  type SignOptions,
+  type VerifyOptions,
+} from 'jsonwebtoken';
 
 const ACCESS_TOKEN_EXPIRATION = '1h' satisfies SignOptions['expiresIn'];
 const REFRESH_TOKEN_EXPIRATION = '30d' satisfies SignOptions['expiresIn'];
@@ -33,7 +39,8 @@ export interface VerifiedJwt<TPayload extends JwtPayload = JwtPayload> {
 
 let cachedKeySet: JwtKeySet | null = null;
 
-const normaliseKeyMaterial = (key: string): string => (key.includes('\\n') ? key.replace(/\\n/g, '\n') : key);
+const normaliseKeyMaterial = (key: string): string =>
+  key.includes('\\n') ? key.replace(/\\n/g, '\n') : key;
 
 const cloneKey = ({ id, privateKey, publicKey }: JwtSigningKey): JwtSigningKey => ({
   id,
@@ -41,7 +48,8 @@ const cloneKey = ({ id, privateKey, publicKey }: JwtSigningKey): JwtSigningKey =
   publicKey: normaliseKeyMaterial(publicKey),
 });
 
-const isNonEmptyString = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0;
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === 'string' && value.trim().length > 0;
 
 const assertTokenClaims = (claims: TokenClaims): void => {
   if (!isNonEmptyString(claims.userId)) {
@@ -123,7 +131,9 @@ const loadKeySetFromEnvironment = (): JwtKeySet => {
     }
   }
 
-  throw new Error('JWT key set is not configured. Set JWT_PRIVATE_KEY_SET with AWS Secrets Manager output.');
+  throw new Error(
+    'JWT key set is not configured. Set JWT_PRIVATE_KEY_SET with AWS Secrets Manager output.'
+  );
 };
 
 const getKeySet = (): JwtKeySet => {
@@ -145,7 +155,8 @@ const getActiveKey = (): JwtSigningKey => {
   return activeKey;
 };
 
-const getKeyById = (keyId: string): JwtSigningKey | undefined => getKeySet().keys.find((key) => key.id === keyId);
+const getKeyById = (keyId: string): JwtSigningKey | undefined =>
+  getKeySet().keys.find((key) => key.id === keyId);
 
 const buildSignOptions = (expiration: TokenExpiration, keyId: string): SignOptions => {
   const options: SignOptions = {
@@ -181,7 +192,11 @@ const buildVerifyOptions = (): VerifyOptions => {
   return options;
 };
 
-const signToken = (claims: TokenClaims, tokenType: JwtTokenType, expiration: TokenExpiration): string => {
+const signToken = (
+  claims: TokenClaims,
+  tokenType: JwtTokenType,
+  expiration: TokenExpiration
+): string => {
   assertTokenClaims(claims);
 
   const signingKey = getActiveKey();
@@ -196,11 +211,15 @@ const signToken = (claims: TokenClaims, tokenType: JwtTokenType, expiration: Tok
   return jwt.sign(payload, signingKey.privateKey, buildSignOptions(expiration, signingKey.id));
 };
 
-export const generateAccessToken = (claims: TokenClaims): string => signToken(claims, 'access', ACCESS_TOKEN_EXPIRATION);
+export const generateAccessToken = (claims: TokenClaims): string =>
+  signToken(claims, 'access', ACCESS_TOKEN_EXPIRATION);
 
-export const generateRefreshToken = (claims: TokenClaims): string => signToken(claims, 'refresh', REFRESH_TOKEN_EXPIRATION);
+export const generateRefreshToken = (claims: TokenClaims): string =>
+  signToken(claims, 'refresh', REFRESH_TOKEN_EXPIRATION);
 
-export const verifyToken = <TPayload extends JwtPayload = JwtPayload>(token: string): VerifiedJwt<TPayload> => {
+export const verifyToken = <TPayload extends JwtPayload = JwtPayload>(
+  token: string
+): VerifiedJwt<TPayload> => {
   const decoded = jwt.decode(token, { complete: true });
 
   if (!decoded || typeof decoded === 'string') {

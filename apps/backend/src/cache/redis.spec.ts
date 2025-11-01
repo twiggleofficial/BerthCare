@@ -282,9 +282,9 @@ describe('redis connections', () => {
     getRedisClient();
 
     const options = RedisConstructor.mock.calls[0][0];
-    expect(options.reconnectOnError({ message: 'READONLY You can\'t write against a replica.' })).toBe(
-      true
-    );
+    expect(
+      options.reconnectOnError({ message: "READONLY You can't write against a replica." })
+    ).toBe(true);
     expect(options.reconnectOnError({ message: 'ETIMEDOUT while reading from socket' })).toBe(true);
     expect(options.reconnectOnError({ message: 'ECONNRESET connection lost' })).toBe(true);
     expect(options.reconnectOnError({ message: 'ERR random failure' })).toBe(false);

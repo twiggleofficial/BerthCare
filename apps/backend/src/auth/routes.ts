@@ -37,7 +37,9 @@ class DuplicateEmailError extends Error {
 }
 
 const isUniqueViolation = (error: unknown): boolean =>
-  Boolean(error && typeof error === 'object' && (error as DatabaseError).code === UNIQUE_VIOLATION_CODE);
+  Boolean(
+    error && typeof error === 'object' && (error as DatabaseError).code === UNIQUE_VIOLATION_CODE
+  );
 
 const formatValidationErrorResponse = (errors: string[]) => ({
   message: 'Invalid request body',
@@ -65,9 +67,7 @@ type AuthResult = {
   refreshToken: string;
 };
 
-const registerAdminAccount = async (
-  payload: SanitisedRegistrationPayload
-): Promise<AuthResult> => {
+const registerAdminAccount = async (payload: SanitisedRegistrationPayload): Promise<AuthResult> => {
   const passwordHash = await hashPassword(payload.password);
 
   return runWithClient(async (client) => {
@@ -262,11 +262,7 @@ authRouter.post(
 
     const { user_id, sub, role: roleClaim, zone_id } = payload;
     const userId =
-      typeof user_id === 'string'
-        ? user_id
-        : typeof sub === 'string'
-          ? sub
-          : undefined;
+      typeof user_id === 'string' ? user_id : typeof sub === 'string' ? sub : undefined;
     const role = typeof roleClaim === 'string' ? roleClaim : undefined;
     const zoneId = typeof zone_id === 'string' ? zone_id : undefined;
 
@@ -482,51 +478,55 @@ authRouter.post(
   }
 );
 
-authRouter.post('/logout', authenticateJwt, async (req: Request, res: Response, next: NextFunction) => {
-  const validation = sanitiseLogoutPayload(req.body ?? {});
+authRouter.post(
+  '/logout',
+  authenticateJwt,
+  async (req: Request, res: Response, next: NextFunction) => {
+    const validation = sanitiseLogoutPayload(req.body ?? {});
 
-  if (!validation.ok) {
-    res.status(400).json(formatValidationErrorResponse(validation.errors));
-    return;
-  }
+    if (!validation.ok) {
+      res.status(400).json(formatValidationErrorResponse(validation.errors));
+      return;
+    }
 
-  const user = req.user;
+    const user = req.user;
 
-  if (!user) {
-    res.status(401).json({ message: 'Authentication required' });
-    return;
-  }
+    if (!user) {
+      res.status(401).json({ message: 'Authentication required' });
+      return;
+    }
 
-  const hashedToken = hashRefreshToken(validation.value.refreshToken);
+    const hashedToken = hashRefreshToken(validation.value.refreshToken);
 
-  try {
-    const ttlMilliseconds = user.tokenExpiresAt - Date.now();
-    const ttlSeconds = Math.max(0, Math.ceil(ttlMilliseconds / 1000));
+    try {
+      const ttlMilliseconds = user.tokenExpiresAt - Date.now();
+      const ttlSeconds = Math.max(0, Math.ceil(ttlMilliseconds / 1000));
 
-    await blacklistAccessToken(user.token, ttlSeconds);
-  } catch (error) {
-    logger.error('Failed to blacklist access token during logout', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      userId: user.id,
-    });
-    return next(error);
-  }
+      await blacklistAccessToken(user.token, ttlSeconds);
+    } catch (error) {
+      logger.error('Failed to blacklist access token during logout', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        userId: user.id,
+      });
+      return next(error);
+    }
 
-  try {
-    await runWithClient(async (client) => {
-      await client.query(
-        `DELETE FROM refresh_tokens
+    try {
+      await runWithClient(async (client) => {
+        await client.query(
+          `DELETE FROM refresh_tokens
          WHERE token_hash = $1 AND user_id = $2`,
-        [hashedToken, user.id]
-      );
-    });
-  } catch (error) {
-    logger.error('Failed to invalidate refresh token during logout', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      userId: user.id,
-    });
-    return next(error);
-  }
+          [hashedToken, user.id]
+        );
+      });
+    } catch (error) {
+      logger.error('Failed to invalidate refresh token during logout', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        userId: user.id,
+      });
+      return next(error);
+    }
 
-  res.status(200).json({ success: true });
-});
+    res.status(200).json({ success: true });
+  }
+);

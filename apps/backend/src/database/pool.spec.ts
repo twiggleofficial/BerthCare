@@ -13,8 +13,7 @@ type MockPool = {
 
 const mockPools: MockPool[] = [];
 let PoolConstructor: jest.Mock;
-let poolFactory: (config: Record<string, unknown>) => MockPool = (config) =>
-  createMockPool(config);
+let poolFactory: (config: Record<string, unknown>) => MockPool = (config) => createMockPool(config);
 
 const createMockPool = (config: Record<string, unknown>): MockPool => {
   const client = {
@@ -35,9 +34,9 @@ const createMockPool = (config: Record<string, unknown>): MockPool => {
 };
 
 jest.mock('pg', () => {
-  PoolConstructor = jest.fn().mockImplementation((config: Record<string, unknown>) =>
-    poolFactory(config)
-  );
+  PoolConstructor = jest
+    .fn()
+    .mockImplementation((config: Record<string, unknown>) => poolFactory(config));
 
   return { Pool: PoolConstructor };
 });
@@ -198,10 +197,13 @@ describe('database pool', () => {
     process.env.DB_REPLICA_NAME = 'berth_replica';
     const { runWithClient } = loadPoolModule();
 
-    const result = await runWithClient(async (client) => {
-      expect(client).toBe(mockPools[1].client);
-      return 'ok';
-    }, { useReadReplica: true });
+    const result = await runWithClient(
+      async (client) => {
+        expect(client).toBe(mockPools[1].client);
+        return 'ok';
+      },
+      { useReadReplica: true }
+    );
 
     expect(result).toBe('ok');
     expect(mockPools[1].connect).toHaveBeenCalledTimes(1);
@@ -211,10 +213,13 @@ describe('database pool', () => {
   it('runs callbacks against primary when replica is unavailable', async () => {
     const { runWithClient } = loadPoolModule();
 
-    const result = await runWithClient(async (client) => {
-      expect(client).toBe(mockPools[0].client);
-      return 42;
-    }, { useReadReplica: true });
+    const result = await runWithClient(
+      async (client) => {
+        expect(client).toBe(mockPools[0].client);
+        return 42;
+      },
+      { useReadReplica: true }
+    );
 
     expect(result).toBe(42);
     expect(mockPools[0].connect).toHaveBeenCalledTimes(1);

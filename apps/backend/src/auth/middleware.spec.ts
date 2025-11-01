@@ -81,10 +81,13 @@ const configureKeySet = () => {
 };
 
 const createMockRequest = (headers: Record<string, string> = {}): Request => {
-  const normalisedHeaders = Object.entries(headers).reduce<Record<string, string>>((acc, [key, value]) => {
-    acc[key.toLowerCase()] = value;
-    return acc;
-  }, {});
+  const normalisedHeaders = Object.entries(headers).reduce<Record<string, string>>(
+    (acc, [key, value]) => {
+      acc[key.toLowerCase()] = value;
+      return acc;
+    },
+    {}
+  );
 
   return {
     headers: { ...normalisedHeaders },
@@ -105,9 +108,7 @@ const createMockResponse = () => {
   return { res, status, json };
 };
 
-const createRequestWithUser = (
-  user?: Partial<AuthenticatedRequestUser>
-): Request => {
+const createRequestWithUser = (user?: Partial<AuthenticatedRequestUser>): Request => {
   const baseUser: AuthenticatedRequestUser = {
     id: 'user-123',
     role: 'admin',
@@ -128,7 +129,9 @@ describe('authenticateJwt middleware', () => {
     mockRedisClient.set.mockReset();
     mockRedisClient.exists.mockResolvedValue(0);
     mockRedisClient.set.mockResolvedValue('OK');
-    mockGetSessionClient.mockReturnValue(mockRedisClient as unknown as ReturnType<typeof getSessionClient>);
+    mockGetSessionClient.mockReturnValue(
+      mockRedisClient as unknown as ReturnType<typeof getSessionClient>
+    );
     jest.clearAllMocks();
   });
 

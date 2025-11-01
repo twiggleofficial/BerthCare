@@ -23,11 +23,7 @@ jest.mock('./token-blacklist', () => ({
 import { app } from '../app';
 import { runWithClient } from '../database/pool';
 import { blacklistAccessToken, isAccessTokenBlacklisted } from './token-blacklist';
-import {
-  configureJwtKeySet,
-  generateAccessToken,
-  resetJwtKeySet,
-} from 'libs/shared/jwt-utils';
+import { configureJwtKeySet, generateAccessToken, resetJwtKeySet } from 'libs/shared/jwt-utils';
 
 const ACTIVE_KEY_ID = 'logout-key-20240201';
 

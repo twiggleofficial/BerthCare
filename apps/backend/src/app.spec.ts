@@ -162,9 +162,9 @@ describe('app', () => {
       const { __TESTING__ } = loadApp();
       const sanitizeUrl = __TESTING__.sanitizeUrl;
 
-      expect(
-        sanitizeUrl('/login?email=user@example.com&token=secret&nested=value')
-      ).toBe('/login?email=%5BREDACTED%5D&token=%5BREDACTED%5D&nested=value');
+      expect(sanitizeUrl('/login?email=user@example.com&token=secret&nested=value')).toBe(
+        '/login?email=%5BREDACTED%5D&token=%5BREDACTED%5D&nested=value'
+      );
       expect(sanitizeUrl('/path?EMAIL=UPPER')).toBe('/path?EMAIL=%5BREDACTED%5D');
       expect(sanitizeUrl('/safe?foo=bar')).toBe('/safe?foo=bar');
       expect(sanitizeUrl('/plain-path')).toBe('/plain-path');
@@ -181,7 +181,9 @@ describe('app', () => {
   it('sanitises sensitive query parameters in access logs', async () => {
     const { app } = loadApp();
 
-    const response = await sendRequest(app, { path: '/unknown?token=secret&email=user@example.com' });
+    const response = await sendRequest(app, {
+      path: '/unknown?token=secret&email=user@example.com',
+    });
 
     expect(response.status).toBe(404);
     expect(logger.info).toHaveBeenCalledWith(
@@ -228,14 +230,14 @@ describe('app', () => {
     mockCheckPhotoBucketHealth.mockImplementation(() => new Promise(() => {}));
 
     const originalSetTimeout = setTimeout;
-    const timeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation(
-      ((handler: unknown, timeout?: number, ...args: unknown[]) =>
+    const timeoutSpy = jest
+      .spyOn(global, 'setTimeout')
+      .mockImplementation(((handler: unknown, timeout?: number, ...args: unknown[]) =>
         originalSetTimeout(
           handler as Parameters<typeof setTimeout>[0],
-          timeout === 5_000 ? 0 : timeout ?? 0,
+          timeout === 5_000 ? 0 : (timeout ?? 0),
           ...(args as unknown[])
-        )) as typeof setTimeout
-    );
+        )) as typeof setTimeout);
 
     const { app } = loadApp();
     const requestPromise = sendRequest(app, { path: '/health' });
