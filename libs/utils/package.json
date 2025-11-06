@@ -1,0 +1,26 @@
+{
+  "name": "@berthcare/utils",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "license": "MIT",
+  "author": "BerthCare Engineering <platform@berthcare.ca>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/berthcare/berthcare"
+  },
+  "homepage": "https://github.com/berthcare/berthcare#readme",
+  "keywords": ["berthcare", "utilities"],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "type-check": "tsc -b --pretty false"
+  }
+}

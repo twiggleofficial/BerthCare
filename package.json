@@ -1,0 +1,26 @@
+{
+  "name": "berthcare-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "build:clean": "pnpm exec tsc -b --clean",
+    "build": "pnpm exec tsc -b",
+    "type-check": "pnpm exec tsc -b --pretty false",
+    "lint": "pnpm exec eslint --max-warnings 0 \"{apps,libs}/**/*.{ts,tsx}\"",
+    "lint:fix": "pnpm exec eslint \"{apps,libs}/**/*.{ts,tsx}\" --fix",
+    "format": "pnpm exec prettier \"**/*.{ts,tsx,js,jsx,json,md}\" --check",
+    "format:fix": "pnpm exec prettier \"**/*.{ts,tsx,js,jsx,json,md}\" --write"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5"
+  }
+}

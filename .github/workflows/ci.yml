@@ -1,0 +1,61 @@
+# CI guidance: project-documentation/architecture-output.md (CI/CD section)
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (ESLint)
+        run: pnpm run lint
+
+      - name: Type Check (TypeScript)
+        run: pnpm run type-check
+
+      - name: Unit Tests (Jest)
+        env:
+          CI: true
+        run: pnpm run test -- --runInBand --ci
+
+      - name: Dependency Audit
+        run: |
+          if [ -f package-lock.json ]; then
+            npm audit --production
+          else
+            pnpm audit --prod
+          fi
+
+      - name: Semgrep SAST
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: p/ci
+        env:
+          SEMGREP_RULES: p/ci

@@ -1,0 +1,12 @@
+dist
+node_modules
+build
+coverage
+.next
+.turbo
+.cache
+.parcel-cache
+.vite
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*

@@ -7,6 +7,7 @@ Pods/
 /dist/
 /build/
 /coverage/
+*.tsbuildinfo
 *.jsbundle
 android/app/build/
 ios/build/
@@ -43,6 +44,14 @@ android/local.properties
 android/.cxx/
 ios/Pods/
 xcuserdata/
+
+# Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
 
 # Misc
 *.keystore
