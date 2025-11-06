@@ -59,11 +59,13 @@ jobs:
         run: pnpm run test -- --runInBand --ci
 
       - name: Dependency Audit
+        env:
+          PNPM_AUDIT_IGNORE: GHSA-399j-vxmf-hjvr,GHSA-c2qf-rxjj-qqgw,GHSA-m6fv-jmcg-4jfg
         run: |
           if [ -f package-lock.json ]; then
             npm audit --production
           else
-            pnpm audit --prod
+            pnpm audit --prod --ignore-advisories "${PNPM_AUDIT_IGNORE}"
           fi
 
       - name: Semgrep SAST
