@@ -7,6 +7,7 @@
     "build:clean": "pnpm exec tsc -b --clean",
     "build": "pnpm exec tsc -b",
     "type-check": "pnpm exec tsc -b --pretty false",
+    "test": "pnpm -r --if-present test",
     "lint": "pnpm exec eslint --max-warnings 0 \"{apps,libs}/**/*.{ts,tsx}\"",
     "lint:fix": "pnpm exec eslint \"{apps,libs}/**/*.{ts,tsx}\" --fix",
     "format": "pnpm exec prettier \"**/*.{ts,tsx,js,jsx,json,md}\" --check",
