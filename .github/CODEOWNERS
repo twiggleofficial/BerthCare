@@ -1,0 +1,11 @@
+# Primary repo defaults
+* @berthcare/devops-leads @berthcare/backend-leads @berthcare/mobile-leads @berthcare/frontend-leads
+
+# Service boundaries
+/apps/backend/ @berthcare/backend-leads
+/apps/mobile/ @berthcare/mobile-leads
+/libs/ @berthcare/frontend-leads @berthcare/backend-leads
+/infra/ @berthcare/devops-leads
+
+# Tooling
+/.github/ @berthcare/devops-leads

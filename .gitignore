@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+Pods/
+*.lock.h
+
+# Build artifacts
+/dist/
+/build/
+/coverage/
+*.jsbundle
+android/app/build/
+ios/build/
+ios/DerivedData/
+
+# Caches & logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+.nyc_output/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+firebase-*.json
+google-services.json
+GoogleService-Info.plist
+
+# Editor settings
+.idea/
+.vscode/
+*.iml
+*.sw?
+.DS_Store
+*.orig
+
+# React Native tooling
+android/.gradle/
+android/.idea/
+android/local.properties
+android/.cxx/
+ios/Pods/
+xcuserdata/
+
+# Misc
+*.keystore
+*.jks
+.expo/
+.expo-shared/
+web-build/
