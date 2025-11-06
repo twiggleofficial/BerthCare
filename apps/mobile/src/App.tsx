@@ -4,19 +4,17 @@ import * as Sentry from '@sentry/react-native';
 import { projectMetadata } from '@berthcare/shared';
 import { bootstrapMonitoring } from './monitoring';
 
+const initializeMonitoring: () => void = bootstrapMonitoring;
+
 const AppView: React.FC = () => {
   React.useEffect(() => {
     try {
-      bootstrapMonitoring();
+      initializeMonitoring();
     } catch (error) {
       console.error('Failed to initialize monitoring:', error);
     }
   }, []);
 
-  return (
-    <SafeAreaView>
-
-const AppView: React.FC = () => {
   return (
     <SafeAreaView>
       <Text>
