@@ -11,6 +11,9 @@ import type { SessionError } from './session-service.js';
 import { seedDeviceSession } from './test-seeders.js';
 import { setupTestDatabase } from './test-utils.js';
 
+// Test fixture for invalid JWT signature verification
+const TEST_INVALID_SECRET = 'incorrect-secret';
+
 type DeviceSessionMetaRow = {
   token_id: string;
   rotation_id: string;
@@ -147,7 +150,7 @@ describe('SessionService', () => {
           tokenId: seed.tokenId,
           rotationId: seed.rotationId,
         },
-        'incorrect-secret',
+        TEST_INVALID_SECRET,
         {
           issuer: projectMetadata.service,
           expiresIn: '30d',
