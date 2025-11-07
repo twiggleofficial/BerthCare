@@ -135,8 +135,7 @@ export const createAuthV1Router = (options = {}) => {
         }
         try {
             const payload = validation.value;
-            const socketAddress = req.socket?.remoteAddress;
-            const ipAddress = typeof socketAddress === 'string' ? socketAddress : undefined;
+            const ipAddress = typeof req.ip === 'string' ? req.ip : undefined;
             const activation = await activationService.requestActivation(payload, {
                 ipAddress,
                 userAgent: req.get('user-agent'),
@@ -173,8 +172,7 @@ export const createAuthV1Router = (options = {}) => {
         }
         try {
             const payload = validation.value;
-            const socketAddress = req.socket?.remoteAddress;
-            const ipAddress = typeof socketAddress === 'string' ? socketAddress : undefined;
+            const ipAddress = typeof req.ip === 'string' ? req.ip : undefined;
             const tokens = await activationService.completeActivation(payload, {
                 ipAddress,
                 userAgent: req.get('user-agent'),
@@ -211,8 +209,7 @@ export const createAuthV1Router = (options = {}) => {
         }
         try {
             const payload = validation.value;
-            const socketAddress = req.socket?.remoteAddress;
-            const ipAddress = typeof socketAddress === 'string' ? socketAddress : undefined;
+            const ipAddress = typeof req.ip === 'string' ? req.ip : undefined;
             const tokens = await sessionService.refreshSession(payload, {
                 ipAddress,
                 userAgent: req.get('user-agent'),

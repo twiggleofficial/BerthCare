@@ -50,7 +50,7 @@ export const flushSentry = async () => {
   }
 
   try {
-    await Sentry.flush(env.sentry.flushTimeoutMs / 1000);
+    await Sentry.flush(env.sentry.flushTimeoutMs);
   } catch (error) {
     sentryLogger.warn('Sentry flush failed', { error });
   }

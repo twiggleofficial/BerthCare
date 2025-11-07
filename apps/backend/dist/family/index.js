@@ -8,7 +8,7 @@ export const createFamilyRouter = () => {
         familyLogger.info('Family feed requested');
         const requestId = typeof res.locals.requestId === 'string' ? res.locals.requestId : undefined;
         res.status(501).json(createErrorResponse({
-            code: 'SERVER_UNKNOWN_ERROR',
+            code: 'NOT_IMPLEMENTED',
             message: 'Family endpoints are not implemented yet',
             requestId,
         }));

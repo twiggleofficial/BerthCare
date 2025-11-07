@@ -13,7 +13,7 @@ export const createClientsRouter = (): Router => {
     const requestId = typeof res.locals.requestId === 'string' ? res.locals.requestId : undefined;
     res.status(501).json(
       createErrorResponse({
-        code: 'SERVER_UNKNOWN_ERROR',
+        code: 'NOT_IMPLEMENTED',
         message: 'Clients endpoints are not implemented yet',
         requestId,
       }),

@@ -7,9 +7,8 @@ import { bootstrapMonitoring } from './monitoring';
 const AppView: React.FC = () => {
   React.useEffect(() => {
     try {
-      const initMonitoring: (() => void) | undefined =
-        typeof bootstrapMonitoring === 'function' ? bootstrapMonitoring : undefined;
-      initMonitoring?.();
+      const runMonitoring: () => void = bootstrapMonitoring;
+      runMonitoring();
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       // eslint-disable-next-line no-console

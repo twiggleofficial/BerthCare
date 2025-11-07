@@ -94,6 +94,8 @@ const defaultCorsOrigins = isProduction
 
 const corsOrigins = parseCorsOrigins(process.env.CORS_ORIGINS, defaultCorsOrigins);
 
+const assetBucketUrl = env.assets.bucketUrl ?? 'https://berthcare-photos.s3.amazonaws.com';
+
 const corsOptions: CorsOptions = {
   origin: corsOrigins,
   credentials: true,
@@ -110,7 +112,7 @@ const helmetOptions: HelmetOptions = {
           defaultSrc: ["'self'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
           scriptSrc: ["'self'"],
-          imgSrc: ["'self'", 'data:', 'https://berthcare-photos.s3.amazonaws.com'],
+          imgSrc: ["'self'", 'data:', assetBucketUrl],
           connectSrc: ["'self'", 'https://api.berthcare.ca'],
           fontSrc: ["'self'"],
           objectSrc: ["'none'"],

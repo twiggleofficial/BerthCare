@@ -41,6 +41,21 @@ const buildRedisUrl = () => {
     }
     return `redis://${host}:${port}`;
 };
+const resolveAssetBucketUrl = () => {
+    const explicit = process.env.AWS_S3_BUCKET_URL;
+    if (explicit && explicit.trim().length > 0) {
+        const normalized = explicit.trim();
+        if (normalized.startsWith('http://') || normalized.startsWith('https://')) {
+            return normalized;
+        }
+        return `https://${normalized}`;
+    }
+    const bucketName = process.env.AWS_S3_BUCKET;
+    if (bucketName && bucketName.trim().length > 0) {
+        return `https://${bucketName.trim()}.s3.amazonaws.com`;
+    }
+    return undefined;
+};
 export const env = {
     nodeEnv: process.env.NODE_ENV ?? 'development',
     appEnv: process.env.APP_ENV ?? process.env.NODE_ENV ?? 'development',
@@ -67,8 +82,14 @@ export const env = {
         profilesSampleRate: parseFloatEnv(process.env.SENTRY_PROFILES_SAMPLE_RATE, 0),
         flushTimeoutMs: parseNonNegativeIntEnv(process.env.SENTRY_FLUSH_TIMEOUT_MS, 2_000),
     },
+    assets: {
+        bucketUrl: resolveAssetBucketUrl(),
+    },
 };
 if (env.nodeEnv === 'production' &&
     (!env.jwtSecret || env.jwtSecret.trim() === '' || env.jwtSecret === 'insecure-development-secret')) {
     throw new Error('JWT_SECRET must be set to a secure value in production');
+}
+if (env.nodeEnv === 'production' && !env.assets.bucketUrl) {
+    throw new Error('AWS_S3_BUCKET_URL or AWS_S3_BUCKET must be configured in production');
 }

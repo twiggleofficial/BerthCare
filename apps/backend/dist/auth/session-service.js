@@ -7,6 +7,7 @@ import { createLogger, serializeError } from '../logger/index.js';
 import { createDeviceSessionRepository, } from './device-session-repository.js';
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const SESSION_TOUCH_THRESHOLD_MS = 5 * 60 * 1000;
+const JWT_ALGORITHM = 'HS256';
 const sessionLogger = createLogger('auth.session');
 export class SessionError extends Error {
     status;
@@ -24,7 +25,10 @@ const hashToken = (token) => {
 };
 const verifyRefreshClaims = (token) => {
     try {
-        const payload = jwt.verify(token, env.jwtSecret);
+        const payload = jwt.verify(token, env.jwtSecret, {
+            issuer: projectMetadata.service,
+            algorithms: [JWT_ALGORITHM],
+        });
         if (typeof payload === 'string') {
             throw new SessionError('Invalid refresh token payload', 401, 'AUTH_TOKEN_INVALID');
         }
@@ -45,7 +49,10 @@ const verifyRefreshClaims = (token) => {
 };
 const verifyAccessClaims = (token) => {
     try {
-        const payload = jwt.verify(token, env.jwtSecret);
+        const payload = jwt.verify(token, env.jwtSecret, {
+            issuer: projectMetadata.service,
+            algorithms: [JWT_ALGORITHM],
+        });
         if (typeof payload === 'string') {
             throw new SessionError('Invalid access token payload', 401, 'AUTH_UNAUTHENTICATED');
         }
@@ -143,6 +150,7 @@ export const createSessionService = (options = {}) => {
                 }, env.jwtSecret, {
                     issuer: projectMetadata.service,
                     expiresIn: '15m',
+                    algorithm: JWT_ALGORITHM,
                 });
                 const refreshToken = jwt.sign({
                     sub: session.userId,
@@ -152,6 +160,7 @@ export const createSessionService = (options = {}) => {
                 }, env.jwtSecret, {
                     issuer: projectMetadata.service,
                     expiresIn: '30d',
+                    algorithm: JWT_ALGORITHM,
                 });
                 const refreshTokenHash = hashToken(refreshToken);
                 await repository.rotateDeviceSession(client, {

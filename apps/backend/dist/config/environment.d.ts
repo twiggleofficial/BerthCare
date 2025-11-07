@@ -24,5 +24,8 @@ export declare const env: {
         profilesSampleRate: number;
         flushTimeoutMs: number;
     };
+    assets: {
+        bucketUrl: string | undefined;
+    };
 };
 export type AppEnvironment = typeof env;

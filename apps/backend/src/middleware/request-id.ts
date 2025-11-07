@@ -27,7 +27,7 @@ export const requestId = (req: Request, res: Response, next: NextFunction) => {
 
   res.locals.requestId = requestIdValue;
   res.setHeader(REQUEST_ID_HEADER, requestIdValue);
-  (req as Request & { requestId?: string }).requestId = requestIdValue;
+  req.requestId = requestIdValue;
 
   next();
 };

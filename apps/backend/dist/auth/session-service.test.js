@@ -6,6 +6,8 @@ import { env } from '../config/environment.js';
 import { createSessionService } from './session-service.js';
 import { seedDeviceSession } from './test-seeders.js';
 import { setupTestDatabase } from './test-utils.js';
+// Test fixture for invalid JWT signature verification - dynamically generated
+const TEST_INVALID_SECRET = crypto.randomBytes(32).toString('hex');
 describe('SessionService', () => {
     it('rotates refresh tokens and updates session metadata', async () => {
         const db = await setupTestDatabase();
@@ -85,7 +87,7 @@ describe('SessionService', () => {
                 deviceId: seed.deviceSessionId,
                 tokenId: seed.tokenId,
                 rotationId: seed.rotationId,
-            }, 'incorrect-secret', {
+            }, TEST_INVALID_SECRET, {
                 issuer: projectMetadata.service,
                 expiresIn: '30d',
             });

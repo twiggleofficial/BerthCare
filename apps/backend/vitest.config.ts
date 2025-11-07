@@ -14,7 +14,7 @@ export default defineConfig({
       reporter: ['text', 'lcov'],
       reportsDirectory: 'coverage',
       provider: 'v8',
-      include: ['src/auth/**/*.ts'],
+      include: ['src/**/*.ts', '!src/**/*.test.ts'],
       thresholds: {
         lines: 0.8,
         statements: 0.8,

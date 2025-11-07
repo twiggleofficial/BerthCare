@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { errorHandler } from './error-handler.js';
-const createMockResponse = () => {
+const createMockResponse = (options = {}) => {
     const res = {
-        locals: { requestId: 'test-request-id' },
-        headersSent: false,
+        locals: { requestId: options.requestId ?? 'test-request-id' },
+        headersSent: options.headersSent ?? false,
     };
     res.statusMock = vi.fn((status) => {
         res.statusCode = status;
@@ -90,6 +90,52 @@ describe('errorHandler', () => {
         });
         expect(payload.error.details).toBeUndefined();
         expect(typeof payload.error.timestamp).toBe('string');
+        expect(next).not.toHaveBeenCalled();
+    });
+    it('delegates to next when headers were already sent', () => {
+        const error = Object.assign(new Error('Streaming response failed'), { status: 200 });
+        const req = createMockRequest();
+        const res = createMockResponse({ headersSent: true });
+        const next = vi.fn();
+        errorHandler(error, req, res, next);
+        expect(next).toHaveBeenCalledWith(error);
+        expect(res.statusMock).not.toHaveBeenCalled();
+        expect(res.jsonMock).not.toHaveBeenCalled();
+    });
+    it.each([
+        { status: 404, expectedCode: 'RESOURCE_NOT_FOUND', message: 'Route not found' },
+        {
+            status: 403,
+            expectedCode: 'AUTH_INSUFFICIENT_PERMISSIONS',
+            message: 'Forbidden for this user',
+        },
+    ])('maps status $status to default code $expectedCode', ({ status, expectedCode, message }) => {
+        const error = Object.assign(new Error(message), { status });
+        const req = createMockRequest();
+        const res = createMockResponse();
+        const next = vi.fn();
+        errorHandler(error, req, res, next);
+        expect(res.statusMock).toHaveBeenCalledWith(status);
+        const payload = res.jsonMock.mock.calls[0]?.[0];
+        expect(payload).toMatchObject({
+            error: { code: expectedCode, message, requestId: 'test-request-id' },
+        });
+    });
+    it('defaults to 500 when status is missing', () => {
+        const error = new Error('Unhandled boom');
+        const req = createMockRequest();
+        const res = createMockResponse();
+        const next = vi.fn();
+        errorHandler(error, req, res, next);
+        expect(res.statusMock).toHaveBeenCalledWith(500);
+        const payload = res.jsonMock.mock.calls[0]?.[0];
+        expect(payload).toMatchObject({
+            error: {
+                code: 'SERVER_UNKNOWN_ERROR',
+                message: 'An unexpected error occurred',
+                requestId: 'test-request-id',
+            },
+        });
         expect(next).not.toHaveBeenCalled();
     });
 });

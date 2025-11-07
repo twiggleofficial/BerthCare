@@ -74,6 +74,7 @@ const invokeRoute = async (router, path, options = {}) => {
         params: {},
         query: {},
         get: (header) => headers[header.toLowerCase()],
+        ip: '127.0.0.1',
         socket: {
             remoteAddress: '127.0.0.1',
         },

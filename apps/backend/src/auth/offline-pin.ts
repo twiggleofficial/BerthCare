@@ -48,27 +48,20 @@ const sanitizeNumber = (
   min = 1,
   max = Number.MAX_SAFE_INTEGER,
 ): number => {
-  const coerce = (input: number): number | null => {
-    if (!Number.isFinite(input)) {
-      return null;
-    }
-    const floored = Math.floor(input);
-    if (floored < min || floored > max) {
-      return null;
-    }
-    return floored;
-  };
-
   if (typeof value === 'number') {
-    const coerced = coerce(value);
-    if (coerced !== null) {
-      return coerced;
+    if (Number.isFinite(value)) {
+      const floored = Math.floor(value);
+      if (floored >= min && floored <= max) {
+        return floored;
+      }
     }
   } else if (typeof value === 'string' && value.length > 0) {
     const numericValue = Number(value);
-    const coerced = coerce(numericValue);
-    if (coerced !== null) {
-      return coerced;
+    if (Number.isFinite(numericValue)) {
+      const floored = Math.floor(numericValue);
+      if (floored >= min && floored <= max) {
+        return floored;
+      }
     }
   }
 

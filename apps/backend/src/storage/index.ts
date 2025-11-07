@@ -49,7 +49,7 @@ export const createStorageClient = (): StorageClient => {
     upload(key: string, buffer: Buffer, contentType: string): Promise<StorageObject> {
       return Promise.resolve({
         key,
-        data: buffer,
+        data: Buffer.from(buffer),
         contentType,
         size: buffer.byteLength,
       });

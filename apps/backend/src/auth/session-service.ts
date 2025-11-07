@@ -17,6 +17,7 @@ import {
 
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const SESSION_TOUCH_THRESHOLD_MS = 5 * 60 * 1000;
+const JWT_ALGORITHM: jwt.Algorithm = 'HS256';
 
 const sessionLogger = createLogger('auth.session');
 
@@ -108,7 +109,10 @@ const hashToken = (token: string): string => {
 
 const verifyRefreshClaims = (token: string): RefreshTokenClaims => {
   try {
-    const payload = jwt.verify(token, env.jwtSecret) as RefreshTokenClaims | string;
+    const payload = jwt.verify(token, env.jwtSecret, {
+      issuer: projectMetadata.service,
+      algorithms: [JWT_ALGORITHM],
+    }) as RefreshTokenClaims | string;
     if (typeof payload === 'string') {
       throw new SessionError('Invalid refresh token payload', 401, 'AUTH_TOKEN_INVALID');
     }
@@ -132,7 +136,10 @@ const verifyRefreshClaims = (token: string): RefreshTokenClaims => {
 
 const verifyAccessClaims = (token: string): AccessTokenClaims => {
   try {
-    const payload = jwt.verify(token, env.jwtSecret) as AccessTokenClaims | string;
+    const payload = jwt.verify(token, env.jwtSecret, {
+      issuer: projectMetadata.service,
+      algorithms: [JWT_ALGORITHM],
+    }) as AccessTokenClaims | string;
 
     if (typeof payload === 'string') {
       throw new SessionError('Invalid access token payload', 401, 'AUTH_UNAUTHENTICATED');
@@ -270,6 +277,7 @@ export const createSessionService = (options: SessionServiceOptions = {}): Sessi
           {
             issuer: projectMetadata.service,
             expiresIn: '15m',
+            algorithm: JWT_ALGORITHM,
           },
         );
 
@@ -284,6 +292,7 @@ export const createSessionService = (options: SessionServiceOptions = {}): Sessi
           {
             issuer: projectMetadata.service,
             expiresIn: '30d',
+            algorithm: JWT_ALGORITHM,
           },
         );
 

@@ -130,6 +130,7 @@ export const createDeviceSessionRepository = () => {
         FROM device_sessions
         WHERE device_fingerprint = $1
           AND revoked_at IS NULL
+          AND (refresh_token_expires_at IS NULL OR refresh_token_expires_at > now())
         LIMIT 1
       `;
             const result = await client.query(query, [deviceFingerprint]);

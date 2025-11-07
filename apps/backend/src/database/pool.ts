@@ -184,6 +184,10 @@ export const waitForDatabasePool = async (): Promise<void> => {
     databaseLogger.error('PostgreSQL pool initialization promise rejected', {
       error: serializeError(error),
     });
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(`PostgreSQL pool initialization failed: ${String(error)}`);
   }
 };
 

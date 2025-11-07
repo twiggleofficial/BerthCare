@@ -1,3 +1,5 @@
+/* eslint-env node */
+
 exports.up = (pgm) => {
   pgm.createTable('auth_activation_attempts', {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('gen_random_uuid()') },

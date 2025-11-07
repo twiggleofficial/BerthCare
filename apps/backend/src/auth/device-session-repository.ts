@@ -234,6 +234,7 @@ export const createDeviceSessionRepository = (): DeviceSessionRepository => {
         FROM device_sessions
         WHERE device_fingerprint = $1
           AND revoked_at IS NULL
+          AND (refresh_token_expires_at IS NULL OR refresh_token_expires_at > now())
         LIMIT 1
       `;
 

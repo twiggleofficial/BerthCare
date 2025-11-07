@@ -25,6 +25,7 @@
     "typescript": "^5.4.5"
   },
   "pnpm": {
+    "// overrides rationale (security + tooling constraints)": "semver>=7.6.0 pulls in the regex-DoS fix flagged by npm audit runs, send>=0.19.0 keeps the Express stack on the patched directory-traversal build, and @react-native-community/cli@20.0.2 ensures metro tooling stays in lockstep with apps/mobile (see docs/architecture.md#mobile-toolchain).",
     "overrides": {
       "@react-native-community/cli": "^20.0.2",
       "send": "^0.19.0",

@@ -14,16 +14,21 @@ const sanitizeHeaderValue = (value: number | string | string[] | undefined): str
   return value;
 };
 
+const extractRequestId = (req: Request, res: Response): string | undefined => {
+  return (
+    (typeof res.locals.requestId === 'string' ? res.locals.requestId : undefined) ??
+    sanitizeHeaderValue(res.getHeader('x-request-id')) ??
+    sanitizeHeaderValue(req.headers['x-request-id'])
+  );
+};
+
 export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
   const start = process.hrtime.bigint();
 
   res.on('finish', () => {
     const durationMs = Number(process.hrtime.bigint() - start) / 1_000_000;
     const latencyMs = Math.round(durationMs * 100) / 100;
-    const requestId =
-      (typeof res.locals.requestId === 'string' ? res.locals.requestId : undefined) ??
-      sanitizeHeaderValue(res.getHeader('x-request-id')) ??
-      sanitizeHeaderValue(req.headers['x-request-id']);
+    const requestId = extractRequestId(req, res);
 
     const payload = {
       method: req.method,
@@ -55,10 +60,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction) =
         method: req.method,
         path: req.originalUrl,
         latencyMs: Math.round(durationMs * 100) / 100,
-        requestId:
-          (typeof res.locals.requestId === 'string' ? res.locals.requestId : undefined) ??
-          sanitizeHeaderValue(res.getHeader('x-request-id')) ??
-          sanitizeHeaderValue(req.headers['x-request-id']),
+        requestId: extractRequestId(req, res),
       });
     }
   });

@@ -1,4 +1,5 @@
 const path = require('path');
+const { URL } = require('url');
 
 const resolveDatabaseUrl = () => {
   if (process.env.DATABASE_URL) {
@@ -11,7 +12,16 @@ const resolveDatabaseUrl = () => {
   const port = process.env.POSTGRES_PORT ?? '5432';
   const database = process.env.POSTGRES_DB ?? 'berthcare_dev';
 
-  return `postgres://${user}:${password}@${host}:${port}/${database}`;
+  const url = new URL('postgres://localhost');
+  url.username = user;
+  url.password = password;
+  url.hostname = host;
+  if (port) {
+    url.port = String(port);
+  }
+  url.pathname = `/${database}`;
+
+  return url.toString();
 };
 
 module.exports = {
