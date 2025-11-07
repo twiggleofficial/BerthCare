@@ -13,6 +13,7 @@ import {
   type DeviceSessionRepository,
   type DeviceSessionUser,
   type DeviceSessionWithUser,
+  DeviceSessionRotationConflictError,
 } from './device-session-repository.js';
 
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -298,14 +299,24 @@ export const createSessionService = (options: SessionServiceOptions = {}): Sessi
 
         const refreshTokenHash = hashToken(refreshToken);
 
-        await repository.rotateDeviceSession(client, {
-          deviceSessionId: session.id,
-          tokenId,
-          rotationId,
-          refreshTokenHash,
-          refreshTokenExpiresAt: refreshExpiresAt,
-          rotatedAt: now,
-        });
+        try {
+          await repository.rotateDeviceSession(client, {
+            deviceSessionId: session.id,
+            tokenId,
+            rotationId,
+            refreshTokenHash,
+            refreshTokenExpiresAt: refreshExpiresAt,
+            rotatedAt: now,
+            expectedTokenId: session.tokenId,
+            expectedRotationId: session.rotationId,
+            expectedRefreshTokenHash: session.refreshTokenHash,
+          });
+        } catch (error) {
+          if (error instanceof DeviceSessionRotationConflictError) {
+            await revokeForReplay('refresh_token_reuse');
+          }
+          throw error;
+        }
 
         await repository.touchDeviceSession(client, session.id, now);
 
