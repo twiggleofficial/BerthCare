@@ -3,7 +3,7 @@ import { Pool } from 'pg';
 import { env } from '../config/environment.js';
 import { createLogger, serializeError } from '../logger/index.js';
 const databaseLogger = createLogger('database');
-const MIN_CONNECTIONS = 10;
+const MIN_CONNECTIONS = env.dbPool.min;
 const MAX_CONNECTIONS = 50;
 const IDLE_TIMEOUT_MS = 30_000;
 const CONNECTION_TIMEOUT_MS = 2_000;
@@ -64,7 +64,7 @@ const initializePool = async (createdPool) => {
                 databaseLogger.error('PostgreSQL pool initialization failed after max retries', {
                     error: serializeError(error),
                 });
-                return;
+                throw error;
             }
             await wait(delayMs);
         }
@@ -92,7 +92,7 @@ export const getDatabasePool = () => {
         databaseLogger.warn('PostgreSQL connection skipped - DATABASE_URL not configured');
         return null;
     }
-    pool = new Pool({
+    const createdPool = new Pool({
         connectionString: env.postgresUrl,
         min: MIN_CONNECTIONS,
         max: MAX_CONNECTIONS,
@@ -100,7 +100,16 @@ export const getDatabasePool = () => {
         connectionTimeoutMillis: CONNECTION_TIMEOUT_MS,
         statement_timeout: STATEMENT_TIMEOUT_MS,
     });
-    attachPoolEventHandlers(pool);
+    if (pool) {
+        void createdPool.end().catch((error) => {
+            databaseLogger.debug('Failed to close duplicate PostgreSQL pool', {
+                error: serializeError(error),
+            });
+        });
+        return pool;
+    }
+    pool = createdPool;
+    attachPoolEventHandlers(createdPool);
     databaseLogger.info('PostgreSQL pool created', {
         config: {
             min: MIN_CONNECTIONS,
@@ -110,8 +119,8 @@ export const getDatabasePool = () => {
             statementTimeoutMs: STATEMENT_TIMEOUT_MS,
         },
     });
-    initializationPromise = initializePool(pool);
-    return pool;
+    initializationPromise = initializePool(createdPool);
+    return createdPool;
 };
 export const waitForDatabasePool = async () => {
     if (!initializationPromise) {
@@ -183,6 +192,8 @@ export const closeDatabasePool = async () => {
         databaseLogger.info('PostgreSQL pool closed', { metrics: metricsBeforeClose });
     }
     catch (error) {
-        databaseLogger.warn('Failed to close PostgreSQL pool cleanly', { error: serializeError(error) });
+        databaseLogger.warn('Failed to close PostgreSQL pool cleanly', {
+            error: serializeError(error),
+        });
     }
 };

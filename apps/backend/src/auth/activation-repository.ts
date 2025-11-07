@@ -67,13 +67,21 @@ export interface ActivationRepository {
   ): Promise<number>;
   recordAttempt(client: PoolClient, record: ActivationAttemptRecord): Promise<void>;
   hasActiveSession(client: PoolClient, userId: string, deviceFingerprint: string): Promise<boolean>;
-  revokePendingSessions(client: PoolClient, userId: string, deviceFingerprint: string): Promise<void>;
+  revokePendingSessions(
+    client: PoolClient,
+    userId: string,
+    deviceFingerprint: string,
+  ): Promise<void>;
   createActivationSession(client: PoolClient, record: ActivationSessionRecord): Promise<void>;
   findActivationSessionByTokenHash(
     client: PoolClient,
     activationTokenHash: string,
   ): Promise<ActivationSessionWithUser | null>;
-  completeActivationSession(client: PoolClient, sessionId: string, completedAt: Date): Promise<void>;
+  completeActivationSession(
+    client: PoolClient,
+    sessionId: string,
+    completedAt: Date,
+  ): Promise<void>;
 }
 
 export const createActivationRepository = (): ActivationRepository => {

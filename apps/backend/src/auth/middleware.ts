@@ -112,9 +112,11 @@ const resolveZoneId = (req: AuthorizationRequest, zoneParam: string): string | u
     return paramValue;
   }
 
-  const bodyValue = (req.body && typeof req.body === 'object'
-    ? (req.body as Record<string, unknown>)[zoneParam]
-    : undefined) as string | undefined;
+  const bodyValue = (
+    req.body && typeof req.body === 'object'
+      ? (req.body as Record<string, unknown>)[zoneParam]
+      : undefined
+  ) as string | undefined;
   if (typeof bodyValue === 'string' && bodyValue.trim().length > 0) {
     return bodyValue;
   }
@@ -325,17 +327,32 @@ export const authorize = (options: AuthorizationOptions = {}): AuthorizationMidd
     }
 
     if (requiredRoles.length > 0 && !hasRole(user, requiredRoles)) {
-      respondWithError(res, 403, 'AUTH_INSUFFICIENT_ROLE', 'You do not have access to this resource.');
+      respondWithError(
+        res,
+        403,
+        'AUTH_INSUFFICIENT_ROLE',
+        'You do not have access to this resource.',
+      );
       return;
     }
 
     if (allPermissions.length > 0 && !hasPermission(user, allPermissions, { match: 'all' })) {
-      respondWithError(res, 403, 'AUTH_INSUFFICIENT_PERMISSIONS', 'You do not have permission to perform this action.');
+      respondWithError(
+        res,
+        403,
+        'AUTH_INSUFFICIENT_PERMISSIONS',
+        'You do not have permission to perform this action.',
+      );
       return;
     }
 
     if (anyPermissions.length > 0 && !hasPermission(user, anyPermissions, { match: 'any' })) {
-      respondWithError(res, 403, 'AUTH_INSUFFICIENT_PERMISSIONS', 'You do not have permission to perform this action.');
+      respondWithError(
+        res,
+        403,
+        'AUTH_INSUFFICIENT_PERMISSIONS',
+        'You do not have permission to perform this action.',
+      );
       return;
     }
 
@@ -351,11 +368,21 @@ export const authorize = (options: AuthorizationOptions = {}): AuthorizationMidd
 
       if (requiredZoneId) {
         if (!canAccessZone(user, requiredZoneId)) {
-          respondWithError(res, 403, 'AUTH_ZONE_ACCESS_DENIED', 'You do not have access to this zone.');
+          respondWithError(
+            res,
+            403,
+            'AUTH_ZONE_ACCESS_DENIED',
+            'You do not have access to this zone.',
+          );
           return;
         }
       } else if (typeof zoneOption === 'object' && zoneOption.required) {
-        respondWithError(res, 400, 'AUTH_ZONE_CONTEXT_REQUIRED', 'Zone context is required for this operation.');
+        respondWithError(
+          res,
+          400,
+          'AUTH_ZONE_CONTEXT_REQUIRED',
+          'Zone context is required for this operation.',
+        );
         return;
       }
     }

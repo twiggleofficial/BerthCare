@@ -19,6 +19,7 @@ BerthCare delivers an offline-first, React Native care delivery experience backe
 ## Local Environment
 
 - `.env.example` documents every variable the stack expects; `make setup` copies it to `.env` so you can adjust ports or credentials before starting containers.
+- `DB_POOL_MIN` controls how many PostgreSQL connections the backend keeps warm (defaults to 2); raise it in staging/prod if you need more ready clients, or lower it locally to reduce idle connections.
 - `docker-compose.yml` pins PostgreSQL 15.5, Redis 7.2, and LocalStack 3.x to keep the local data layer in lockstep with the [architecture blueprint](project-documentation/architecture-output.md) while still running entirely on your machine.
 - Services listen on `localhost:5432` (PostgreSQL), `localhost:6379` (Redis), and `localhost:4566` (LocalStack). Update the `.env` file if you need to avoid clashes with other installs.
 - Buckets and schemas are not auto-created—own the stack by running the migrations or S3 bootstrap scripts you need inside the containers.

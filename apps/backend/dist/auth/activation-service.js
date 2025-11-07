@@ -174,7 +174,10 @@ export const createActivationService = (options = {}) => {
                 }
                 await repository.revokePendingSessions(client, user.id, payload.deviceFingerprint);
                 const activationToken = crypto.randomBytes(32).toString('hex');
-                const activationTokenHash = crypto.createHash('sha256').update(activationToken).digest('hex');
+                const activationTokenHash = crypto
+                    .createHash('sha256')
+                    .update(activationToken)
+                    .digest('hex');
                 const expiresAt = new Date(Date.now() + ACTIVATION_TOKEN_TTL_MS);
                 const sessionRecord = {
                     userId: user.id,
@@ -310,7 +313,7 @@ export const createActivationService = (options = {}) => {
                     supportsBiometric: payload.supportsBiometric,
                     pinScryptHash: pinHash.hash,
                     pinScryptSalt: pinHash.salt,
-                    pinScryptParams: pinHash.params,
+                    pinScryptParams: JSON.stringify(pinHash.params),
                     tokenId,
                     rotationId,
                     refreshTokenHash,

@@ -10,7 +10,11 @@
     "url": "https://github.com/berthcare/berthcare"
   },
   "homepage": "https://github.com/berthcare/berthcare#readme",
-  "keywords": ["berthcare", "shared", "utilities"],
+  "keywords": [
+    "berthcare",
+    "shared",
+    "utilities"
+  ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {

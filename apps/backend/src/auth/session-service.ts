@@ -186,7 +186,12 @@ export const createSessionService = (options: SessionServiceOptions = {}): Sessi
 
       if (!pool) {
         sessionLogger.error('Refresh session unavailable - database pool not configured');
-        throw new SessionError('Session service unavailable', 503, 'AUTH_SERVICE_UNAVAILABLE', false);
+        throw new SessionError(
+          'Session service unavailable',
+          503,
+          'AUTH_SERVICE_UNAVAILABLE',
+          false,
+        );
       }
 
       const now = new Date();
@@ -203,7 +208,12 @@ export const createSessionService = (options: SessionServiceOptions = {}): Sessi
         }
 
         if (session.userId !== claims.sub) {
-          throw new SessionError('Refresh token subject mismatch', 401, 'AUTH_TOKEN_INVALID', false);
+          throw new SessionError(
+            'Refresh token subject mismatch',
+            401,
+            'AUTH_TOKEN_INVALID',
+            false,
+          );
         }
 
         if (session.revokedAt) {
@@ -342,7 +352,12 @@ export const createSessionService = (options: SessionServiceOptions = {}): Sessi
 
       if (!pool) {
         sessionLogger.error('Revoke session unavailable - database pool not configured');
-        throw new SessionError('Session service unavailable', 503, 'AUTH_SERVICE_UNAVAILABLE', false);
+        throw new SessionError(
+          'Session service unavailable',
+          503,
+          'AUTH_SERVICE_UNAVAILABLE',
+          false,
+        );
       }
 
       const now = new Date();
@@ -359,7 +374,12 @@ export const createSessionService = (options: SessionServiceOptions = {}): Sessi
         }
 
         if (session.userId !== claims.sub) {
-          throw new SessionError('Refresh token subject mismatch', 401, 'AUTH_TOKEN_INVALID', false);
+          throw new SessionError(
+            'Refresh token subject mismatch',
+            401,
+            'AUTH_TOKEN_INVALID',
+            false,
+          );
         }
 
         if (session.revokedAt) {
@@ -421,7 +441,12 @@ export const createSessionService = (options: SessionServiceOptions = {}): Sessi
       const pool = resolvePool();
 
       if (!pool) {
-        throw new SessionError('Session service unavailable', 503, 'AUTH_SERVICE_UNAVAILABLE', false);
+        throw new SessionError(
+          'Session service unavailable',
+          503,
+          'AUTH_SERVICE_UNAVAILABLE',
+          false,
+        );
       }
 
       const client = await pool.connect();
@@ -434,7 +459,12 @@ export const createSessionService = (options: SessionServiceOptions = {}): Sessi
         }
 
         if (session.userId !== claims.sub) {
-          throw new SessionError('Access token subject mismatch', 401, 'AUTH_UNAUTHENTICATED', false);
+          throw new SessionError(
+            'Access token subject mismatch',
+            401,
+            'AUTH_UNAUTHENTICATED',
+            false,
+          );
         }
 
         if (session.revokedAt) {
@@ -488,4 +518,3 @@ export const createSessionService = (options: SessionServiceOptions = {}): Sessi
     },
   };
 };
-

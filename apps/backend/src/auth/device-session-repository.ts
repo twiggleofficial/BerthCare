@@ -73,8 +73,14 @@ export type RevokeDeviceSessionInput = {
 };
 
 export interface DeviceSessionRepository {
-  createDeviceSession(client: PoolClient, input: CreateDeviceSessionInput): Promise<DeviceSessionRecord>;
-  findActiveByFingerprint(client: PoolClient, deviceFingerprint: string): Promise<DeviceSessionRecord | null>;
+  createDeviceSession(
+    client: PoolClient,
+    input: CreateDeviceSessionInput,
+  ): Promise<DeviceSessionRecord>;
+  findActiveByFingerprint(
+    client: PoolClient,
+    deviceFingerprint: string,
+  ): Promise<DeviceSessionRecord | null>;
   findByIdWithUser(
     client: PoolClient,
     deviceSessionId: string,
@@ -193,6 +199,10 @@ export const createDeviceSessionRepository = (): DeviceSessionRepository => {
         input.lastSeenAt ?? null,
       ]);
 
+      if (!result.rowCount || !result.rows[0]) {
+        throw new Error('Failed to create device session');
+      }
+
       return result.rows[0];
     },
 
@@ -289,7 +299,7 @@ export const createDeviceSessionRepository = (): DeviceSessionRepository => {
         WHERE id = $1
       `;
 
-      await client.query(query, [
+      const result = await client.query(query, [
         input.deviceSessionId,
         input.tokenId,
         input.rotationId,
@@ -297,6 +307,10 @@ export const createDeviceSessionRepository = (): DeviceSessionRepository => {
         input.refreshTokenExpiresAt,
         input.rotatedAt,
       ]);
+
+      if (result.rowCount === 0) {
+        throw new Error(`Device session ${input.deviceSessionId} not found for rotation`);
+      }
     },
 
     async revokeDeviceSession(client, input) {
@@ -309,7 +323,15 @@ export const createDeviceSessionRepository = (): DeviceSessionRepository => {
         WHERE id = $1
       `;
 
-      await client.query(query, [input.deviceSessionId, input.revokedAt, input.reason ?? null]);
+      const result = await client.query(query, [
+        input.deviceSessionId,
+        input.revokedAt,
+        input.reason ?? null,
+      ]);
+
+      if (result.rowCount === 0) {
+        throw new Error(`Device session ${input.deviceSessionId} not found for revocation`);
+      }
     },
 
     async touchDeviceSession(client, deviceSessionId, seenAt) {

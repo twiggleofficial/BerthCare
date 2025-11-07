@@ -2,7 +2,7 @@ import { format, transports, createLogger as createWinstonLogger } from 'winston
 import { projectMetadata } from '@berthcare/shared';
 import { env } from '../config/environment.js';
 const baseLogger = createWinstonLogger({
-    level: process.env.LOG_LEVEL ?? 'info',
+    level: env.logLevel ?? 'info',
     defaultMeta: {
         service: projectMetadata.service,
         version: projectMetadata.version,

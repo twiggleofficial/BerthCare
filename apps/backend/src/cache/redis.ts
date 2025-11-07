@@ -8,6 +8,26 @@ import { createLogger, serializeError } from '../logger/index.js';
 
 const cacheLogger = createLogger('cache');
 
+const parsePositiveIntEnv = (name: string, fallback: number): number => {
+  const raw = process.env[name];
+
+  if (!raw) {
+    return fallback;
+  }
+
+  const value = Number.parseInt(raw, 10);
+  if (Number.isNaN(value) || value <= 0) {
+    cacheLogger.warn('Ignoring invalid numeric environment value; using fallback', {
+      name,
+      value: raw,
+      fallback,
+    });
+    return fallback;
+  }
+
+  return value;
+};
+
 export const CACHE_TTL = {
   client_list: 5 * 60,
   client_detail: 10 * 60,
@@ -24,13 +44,19 @@ type RedisPoolState = {
   nextIndex: number;
 };
 
-const POOL_MIN_CONNECTIONS = 2;
-const POOL_MAX_CONNECTIONS = 6;
-const CONNECTION_TIMEOUT_MS = 1_500;
-const INITIAL_BACKOFF_MS = 200;
-const MAX_BACKOFF_MS = 3_000;
-const MAX_RETRIES = 5;
-const INVALIDATE_SCAN_COUNT = 100;
+const POOL_MIN_CONNECTIONS = parsePositiveIntEnv('REDIS_POOL_MIN', 2);
+const POOL_MAX_CONNECTIONS = Math.max(
+  parsePositiveIntEnv('REDIS_POOL_MAX', 6),
+  POOL_MIN_CONNECTIONS,
+);
+const CONNECTION_TIMEOUT_MS = parsePositiveIntEnv('REDIS_CONN_TIMEOUT_MS', 1_500);
+const INITIAL_BACKOFF_MS = parsePositiveIntEnv('REDIS_INIT_BACKOFF_MS', 200);
+const MAX_BACKOFF_MS = Math.max(
+  parsePositiveIntEnv('REDIS_MAX_BACKOFF_MS', 3_000),
+  INITIAL_BACKOFF_MS,
+);
+const MAX_RETRIES = parsePositiveIntEnv('REDIS_MAX_RETRIES', 5);
+const INVALIDATE_SCAN_COUNT = parsePositiveIntEnv('REDIS_INVALIDATE_SCAN_COUNT', 100);
 
 const pool: RedisPoolState = {
   clients: [],
@@ -60,8 +86,11 @@ const wait = (ms: number) =>
 const calculateBackoff = (attempt: number): number => {
   const exponential = INITIAL_BACKOFF_MS * 2 ** (attempt - 1);
   const capped = Math.min(exponential, MAX_BACKOFF_MS);
-  const jitter = Math.round(Math.random() * 50);
-  return capped + jitter;
+  const jitterRange = Math.max(1, capped * 0.1);
+  const jitter = (Math.random() * 2 - 1) * jitterRange;
+  const jittered = capped + jitter;
+  const clamped = Math.min(Math.max(jittered, INITIAL_BACKOFF_MS), MAX_BACKOFF_MS);
+  return Math.round(clamped);
 };
 
 const buildRedisOptions = (connectionName: string): RedisOptions => ({
@@ -274,7 +303,10 @@ const ensureMinimumPoolSize = async (): Promise<void> => {
     return;
   }
 
-  const needed = Math.min(POOL_MIN_CONNECTIONS - pool.clients.length, POOL_MAX_CONNECTIONS - pool.clients.length);
+  const needed = Math.min(
+    POOL_MIN_CONNECTIONS - pool.clients.length,
+    POOL_MAX_CONNECTIONS - pool.clients.length,
+  );
   const newClients: RedisClient[] = [];
 
   for (let index = 0; index < needed; index += 1) {
@@ -370,7 +402,11 @@ export const get = async <T>(key: string): Promise<T | null> => {
   }
 };
 
-export const set = async <T>(key: string, value: T, options?: CacheSetOptions): Promise<boolean> => {
+export const set = async <T>(
+  key: string,
+  value: T,
+  options?: CacheSetOptions,
+): Promise<boolean> => {
   const client = await acquireClient();
 
   if (!client) {
@@ -442,7 +478,13 @@ export const invalidate = async (pattern: string): Promise<number> => {
 
   try {
     do {
-      const [nextCursor, keys] = await client.scan(cursor, 'MATCH', pattern, 'COUNT', INVALIDATE_SCAN_COUNT);
+      const [nextCursor, keys] = await client.scan(
+        cursor,
+        'MATCH',
+        pattern,
+        'COUNT',
+        INVALIDATE_SCAN_COUNT,
+      );
       cursor = nextCursor;
 
       if (keys.length > 0) {

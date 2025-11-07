@@ -12,7 +12,7 @@
     "migrate": "node-pg-migrate up --config ./pgmigrate.config.cjs",
     "migrate:down": "node-pg-migrate down --config ./pgmigrate.config.cjs",
     "seed:dev": "tsx ./scripts/seed-dev.ts",
-    "test": "vitest run --coverage"
+    "test": "node ./scripts/run-vitest.mjs"
   },
   "dependencies": {
     "@sentry/node": "^7.120.4",

@@ -12,10 +12,7 @@ const createUser = (overrides = {}) => {
     };
 };
 const createRequest = (overrides = {}) => {
-    const baseHeaders = Object.fromEntries(Object.entries(overrides.headers ?? {}).map(([key, value]) => [
-        key.toLowerCase(),
-        value,
-    ]));
+    const baseHeaders = Object.fromEntries(Object.entries(overrides.headers ?? {}).map(([key, value]) => [key.toLowerCase(), value]));
     const request = {
         params: {},
         query: {},
@@ -180,7 +177,9 @@ describe('loadDeviceSession', () => {
     });
     it('maps session errors to error responses', async () => {
         const sessionService = {
-            loadSessionContext: vi.fn().mockRejectedValue(new SessionError('Device revoked', 423, 'AUTH_DEVICE_REVOKED')),
+            loadSessionContext: vi
+                .fn()
+                .mockRejectedValue(new SessionError('Device revoked', 423, 'AUTH_DEVICE_REVOKED')),
         };
         const middleware = loadDeviceSession(sessionService);
         const req = createRequest({

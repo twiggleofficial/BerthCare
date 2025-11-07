@@ -27,10 +27,9 @@ const createUser = (overrides: Partial<AuthenticatedUser> = {}): AuthenticatedUs
 
 const createRequest = (overrides: Partial<AuthorizationRequest> = {}): AuthorizationRequest => {
   const baseHeaders = Object.fromEntries(
-    Object.entries((overrides.headers as Record<string, string> | undefined) ?? {}).map(([key, value]) => [
-      key.toLowerCase(),
-      value,
-    ]),
+    Object.entries((overrides.headers as Record<string, string> | undefined) ?? {}).map(
+      ([key, value]) => [key.toLowerCase(), value],
+    ),
   );
 
   const request = {
@@ -161,7 +160,13 @@ describe('canAccessZone', () => {
 
 describe('loadDeviceSession', () => {
   const createSessionContext = (): {
-    user: { id: string; role: AuthenticatedUser['role']; zoneId: string | null; permissions?: string[]; accessibleZoneIds?: string[] };
+    user: {
+      id: string;
+      role: AuthenticatedUser['role'];
+      zoneId: string | null;
+      permissions?: string[];
+      accessibleZoneIds?: string[];
+    };
     deviceSession: DeviceSessionContext;
     token: {
       sub: string;
@@ -248,9 +253,9 @@ describe('loadDeviceSession', () => {
 
   it('maps session errors to error responses', async () => {
     const sessionService = {
-      loadSessionContext: vi.fn().mockRejectedValue(
-        new SessionError('Device revoked', 423, 'AUTH_DEVICE_REVOKED'),
-      ),
+      loadSessionContext: vi
+        .fn()
+        .mockRejectedValue(new SessionError('Device revoked', 423, 'AUTH_DEVICE_REVOKED')),
     };
 
     const middleware = loadDeviceSession(sessionService as unknown as SessionService);
@@ -309,7 +314,11 @@ describe('authorize middleware', () => {
     middleware(req, res, next as unknown as NextFunction);
 
     expect(res.statusMock).toHaveBeenCalledWith(403);
-    expectErrorResponse(res, 'AUTH_INSUFFICIENT_PERMISSIONS', 'You do not have permission to perform this action.');
+    expectErrorResponse(
+      res,
+      'AUTH_INSUFFICIENT_PERMISSIONS',
+      'You do not have permission to perform this action.',
+    );
     expect(next).not.toHaveBeenCalled();
   });
 
@@ -324,7 +333,11 @@ describe('authorize middleware', () => {
     middleware(req, res, next as unknown as NextFunction);
 
     expect(res.statusMock).toHaveBeenCalledWith(403);
-    expectErrorResponse(res, 'AUTH_INSUFFICIENT_PERMISSIONS', 'You do not have permission to perform this action.');
+    expectErrorResponse(
+      res,
+      'AUTH_INSUFFICIENT_PERMISSIONS',
+      'You do not have permission to perform this action.',
+    );
     expect(next).not.toHaveBeenCalled();
   });
 
@@ -359,7 +372,11 @@ describe('authorize middleware', () => {
     middleware(req, res, next as unknown as NextFunction);
 
     expect(res.statusMock).toHaveBeenCalledWith(400);
-    expectErrorResponse(res, 'AUTH_ZONE_CONTEXT_REQUIRED', 'Zone context is required for this operation.');
+    expectErrorResponse(
+      res,
+      'AUTH_ZONE_CONTEXT_REQUIRED',
+      'Zone context is required for this operation.',
+    );
     expect(next).not.toHaveBeenCalled();
   });
 

@@ -17,7 +17,8 @@ export const createErrorResponse = ({
   timestamp,
 }: ErrorResponseOptions) => {
   const code = maybeCode ?? DEFAULT_ERROR_CODE;
-  const fallbackMessage = getDefaultMessageForCode(DEFAULT_ERROR_CODE) ?? 'An unexpected error occurred';
+  const fallbackMessage =
+    getDefaultMessageForCode(DEFAULT_ERROR_CODE) ?? 'An unexpected error occurred';
   const derivedMessage = maybeMessage ?? getDefaultMessageForCode(code) ?? fallbackMessage;
 
   const errorPayload: {

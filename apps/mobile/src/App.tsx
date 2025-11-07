@@ -4,14 +4,16 @@ import * as Sentry from '@sentry/react-native';
 import { projectMetadata } from '@berthcare/shared';
 import { bootstrapMonitoring } from './monitoring';
 
-const initializeMonitoring: () => void = bootstrapMonitoring;
-
 const AppView: React.FC = () => {
   React.useEffect(() => {
     try {
-      initializeMonitoring();
-    } catch (error) {
-      console.error('Failed to initialize monitoring:', error);
+      const initMonitoring: (() => void) | undefined =
+        typeof bootstrapMonitoring === 'function' ? bootstrapMonitoring : undefined;
+      initMonitoring?.();
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // eslint-disable-next-line no-console
+      console.error('Failed to initialize monitoring:', errorMessage);
     }
   }, []);
 

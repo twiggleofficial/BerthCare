@@ -41,8 +41,10 @@ export const errorHandler = (error, req, res, next) => {
     const requestId = typeof res.locals.requestId === 'string' ? res.locals.requestId : undefined;
     const code = error.code ?? defaultCodeForStatus(status);
     const shouldExpose = error.expose ?? status < 500;
-    const fallbackMessage = getDefaultMessageForCode(code) ?? getDefaultMessageForCode(DEFAULT_ERROR_CODE) ?? 'An unexpected error occurred';
-    const message = shouldExpose ? error.message ?? fallbackMessage : fallbackMessage;
+    const fallbackMessage = getDefaultMessageForCode(code) ??
+        getDefaultMessageForCode(DEFAULT_ERROR_CODE) ??
+        'An unexpected error occurred';
+    const message = shouldExpose ? (error.message ?? fallbackMessage) : fallbackMessage;
     const details = shouldExpose ? error.details : undefined;
     errorLogger.error('Unhandled application error', {
         message: error.message,

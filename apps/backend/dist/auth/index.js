@@ -8,7 +8,7 @@ import { createErrorResponse } from '../errors/create-error-response.js';
 import { createLogger } from '../logger/index.js';
 import { ActivationError, createActivationService, } from './activation-service.js';
 import { loadDeviceSession } from './middleware.js';
-import { createSessionService, SessionError, } from './session-service.js';
+import { createSessionService, SessionError } from './session-service.js';
 const authLogger = createLogger('auth');
 const loginSchema = Joi.object({
     email: Joi.string().email({ tlds: false }).required(),
@@ -25,10 +25,7 @@ const activationSchema = Joi.object({
 });
 let generatedHash = null;
 const activationCompletionSchema = Joi.object({
-    activationToken: Joi.string()
-        .length(64)
-        .hex()
-        .required(),
+    activationToken: Joi.string().length(64).hex().required(),
     pin: Joi.string()
         .pattern(/^\d{6}$/)
         .message('PIN must be exactly 6 digits')
@@ -38,15 +35,11 @@ const activationCompletionSchema = Joi.object({
 });
 const sessionRefreshSchema = Joi.object({
     refreshToken: Joi.string().max(2048).required(),
-    deviceId: Joi.string()
-        .guid({ version: 'uuidv4' })
-        .required(),
+    deviceId: Joi.string().guid({ version: 'uuidv4' }).required(),
 });
 const sessionRevokeSchema = Joi.object({
     refreshToken: Joi.string().max(2048).required(),
-    deviceId: Joi.string()
-        .guid({ version: 'uuidv4' })
-        .required(),
+    deviceId: Joi.string().guid({ version: 'uuidv4' }).required(),
     reason: Joi.string().max(255).optional(),
 });
 const resolveDemoPasswordHash = async () => {
@@ -61,7 +54,9 @@ const resolveDemoPasswordHash = async () => {
     return generatedHash;
 };
 const verifyCredentials = async (email, password) => {
-    if (email !== env.authDemo.email) {
+    const normalizedEmail = email.trim().toLowerCase();
+    const expectedEmail = env.authDemo.email.trim().toLowerCase();
+    if (normalizedEmail !== expectedEmail) {
         return false;
     }
     const hash = await resolveDemoPasswordHash();
@@ -111,7 +106,7 @@ export const createAuthRouter = () => {
     router.get('/me', (_req, res) => {
         const requestId = typeof res.locals.requestId === 'string' ? res.locals.requestId : undefined;
         res.status(501).json(createErrorResponse({
-            code: 'SERVER_UNKNOWN_ERROR',
+            code: 'SERVER_NOT_IMPLEMENTED',
             message: 'Account profile endpoint not implemented yet',
             requestId,
         }));

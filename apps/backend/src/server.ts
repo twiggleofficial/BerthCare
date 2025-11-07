@@ -1,7 +1,7 @@
 import type { Server } from 'http';
 
 import { app } from './app.js';
-import { getRedisClient, closeRedisConnection } from './cache/index.js';
+import { getRedisClient, closeRedisConnections } from './cache/index.js';
 import { env } from './config/environment.js';
 import { getDatabasePool, waitForDatabasePool, closeDatabasePool } from './database/index.js';
 import { createLogger, serializeError } from './logger/index.js';
@@ -65,13 +65,13 @@ const gracefulShutdown = async (trigger: string, detail?: unknown) => {
     await Promise.allSettled([
       closeHttpServer(),
       closeDatabasePool(),
-      closeRedisConnection(),
+      closeRedisConnections(),
       flushSentry(),
     ]);
   } finally {
     clearTimeout(timeout);
     serverLogger.info('Shutdown complete', { trigger });
-    process.exit(trigger === 'uncaughtException' ? 1 : 0);
+    process.exit(trigger === 'uncaughtException' || trigger === 'unhandledRejection' ? 1 : 0);
   }
 };
 

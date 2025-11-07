@@ -28,23 +28,58 @@ const app = express();
 app.disable('x-powered-by');
 configureSentry(app);
 const isProduction = env.nodeEnv === 'production';
+const parseCorsOrigins = (rawOrigins, fallback) => {
+    if (!rawOrigins) {
+        return fallback;
+    }
+    const trimmed = rawOrigins.trim();
+    if (!trimmed) {
+        return fallback;
+    }
+    try {
+        if (trimmed.startsWith('[')) {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) {
+                const cleaned = parsed
+                    .map((value) => (typeof value === 'string' ? value.trim() : ''))
+                    .filter((value) => value.length > 0);
+                return cleaned.length > 0 ? cleaned : fallback;
+            }
+            startupLogger.warn('CORS_ORIGINS JSON did not resolve to an array; using defaults');
+            return fallback;
+        }
+        const cleaned = trimmed
+            .split(',')
+            .map((value) => value.trim())
+            .filter((value) => value.length > 0);
+        return cleaned.length > 0 ? cleaned : fallback;
+    }
+    catch (error) {
+        startupLogger.warn('Failed to parse CORS_ORIGINS; using defaults', {
+            error: error instanceof Error ? error.message : String(error),
+        });
+        return fallback;
+    }
+};
 const limiter = rateLimit({
     windowMs: env.rateLimit.windowMs,
     limit: env.rateLimit.max,
     standardHeaders: true,
     legacyHeaders: false,
 });
+const defaultCorsOrigins = isProduction
+    ? ['https://app.berthcare.ca', 'https://family.berthcare.ca']
+    : [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:5173',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:3001',
+        'http://127.0.0.1:5173',
+    ];
+const corsOrigins = parseCorsOrigins(process.env.CORS_ORIGINS, defaultCorsOrigins);
 const corsOptions = {
-    origin: isProduction
-        ? ['https://app.berthcare.ca', 'https://family.berthcare.ca']
-        : [
-            'http://localhost:3000',
-            'http://localhost:3001',
-            'http://localhost:5173',
-            'http://127.0.0.1:3000',
-            'http://127.0.0.1:3001',
-            'http://127.0.0.1:5173',
-        ],
+    origin: corsOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -123,6 +158,6 @@ app.use(errorHandler);
 startupLogger.info('Express app configured', {
     rateLimit: env.rateLimit,
     nodeEnv: env.nodeEnv,
-    corsOrigins: corsOptions.origin,
+    corsOrigins,
 });
 export { app };

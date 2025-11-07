@@ -39,4 +39,3 @@ All resources are tagged with `Project`, `Environment`, and `ManagedBy` for trac
 
 - Integrate the emitted IAM role ARNs and SSM parameters into the ECS service/task definitions.
 - Configure VPC endpoints (S3, SSM) if future compliance reviews require private network egress for AWS services.
-

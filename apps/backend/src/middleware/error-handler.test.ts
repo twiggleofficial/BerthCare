@@ -87,7 +87,13 @@ describe('errorHandler', () => {
 
     expect(res.statusMock).toHaveBeenCalledWith(502);
     const payload = res.jsonMock.mock.calls[0]?.[0] as {
-      error: { code: string; message: string; details?: unknown; requestId?: string; timestamp: string };
+      error: {
+        code: string;
+        message: string;
+        details?: unknown;
+        requestId?: string;
+        timestamp: string;
+      };
     };
     expect(payload).toMatchObject({
       error: {
@@ -115,7 +121,13 @@ describe('errorHandler', () => {
     errorHandler(error, req, res, next as unknown as NextFunction);
 
     const payload = res.jsonMock.mock.calls[0]?.[0] as {
-      error: { code: string; message: string; details?: unknown; requestId?: string; timestamp: string };
+      error: {
+        code: string;
+        message: string;
+        details?: unknown;
+        requestId?: string;
+        timestamp: string;
+      };
     };
     expect(payload).toMatchObject({
       error: {

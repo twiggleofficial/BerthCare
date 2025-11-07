@@ -97,6 +97,9 @@ export const createDeviceSessionRepository = () => {
                 input.userAgent ?? null,
                 input.lastSeenAt ?? null,
             ]);
+            if (!result.rowCount || !result.rows[0]) {
+                throw new Error('Failed to create device session');
+            }
             return result.rows[0];
         },
         async findActiveByFingerprint(client, deviceFingerprint) {
@@ -185,7 +188,7 @@ export const createDeviceSessionRepository = () => {
           updated_at = NOW()
         WHERE id = $1
       `;
-            await client.query(query, [
+            const result = await client.query(query, [
                 input.deviceSessionId,
                 input.tokenId,
                 input.rotationId,
@@ -193,6 +196,9 @@ export const createDeviceSessionRepository = () => {
                 input.refreshTokenExpiresAt,
                 input.rotatedAt,
             ]);
+            if (result.rowCount === 0) {
+                throw new Error(`Device session ${input.deviceSessionId} not found for rotation`);
+            }
         },
         async revokeDeviceSession(client, input) {
             const query = `
@@ -203,7 +209,14 @@ export const createDeviceSessionRepository = () => {
           updated_at = NOW()
         WHERE id = $1
       `;
-            await client.query(query, [input.deviceSessionId, input.revokedAt, input.reason ?? null]);
+            const result = await client.query(query, [
+                input.deviceSessionId,
+                input.revokedAt,
+                input.reason ?? null,
+            ]);
+            if (result.rowCount === 0) {
+                throw new Error(`Device session ${input.deviceSessionId} not found for revocation`);
+            }
         },
         async touchDeviceSession(client, deviceSessionId, seenAt) {
             const query = `

@@ -34,6 +34,7 @@ exports.up = (pgm) => {
   pgm.createExtension('uuid-ossp', { ifNotExists: true });
   pgm.createExtension('cube', { ifNotExists: true });
   pgm.createExtension('earthdistance', { ifNotExists: true });
+  pgm.createExtension('citext', { ifNotExists: true });
 
   pgm.createFunction(
     'update_updated_at_column',
@@ -67,7 +68,7 @@ exports.up = (pgm) => {
 
   pgm.createTable('users', {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('gen_random_uuid()') },
-    email: { type: 'varchar(255)', notNull: true },
+    email: { type: 'citext', notNull: true },
     password_hash: { type: 'varchar(255)' },
     activation_code_hash: { type: 'varchar(255)' },
     activation_expires_at: { type: 'timestamptz' },
@@ -358,6 +359,7 @@ exports.down = (pgm) => {
 
   pgm.dropFunction('update_updated_at_column', [], { ifExists: true });
 
+  pgm.dropExtension('citext', { ifExists: true });
   pgm.dropExtension('earthdistance', { ifExists: true });
   pgm.dropExtension('cube', { ifExists: true });
   pgm.dropExtension('uuid-ossp', { ifExists: true });

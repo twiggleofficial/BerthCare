@@ -1,5 +1,7 @@
 // Error codes align with project-documentation/architecture-output.md – Error Response Format.
 
+export const SERVER_NOT_IMPLEMENTED = 'SERVER_NOT_IMPLEMENTED';
+
 export const SPEC_ERROR_MESSAGES = {
   AUTH_INVALID_CREDENTIALS: 'Invalid email or password',
   AUTH_INVALID_ACTIVATION_CODE: 'Activation code not recognized',
@@ -41,6 +43,7 @@ const ADDITIONAL_ERROR_MESSAGES = {
   AUTH_INVALID_SESSION_REVOKE_PAYLOAD: 'Session revoke payload is invalid.',
   AUTH_SESSION_NOT_FOUND: 'Device session could not be found.',
   AUTH_DEVICE_MISMATCH: 'Request does not match the active device session.',
+  [SERVER_NOT_IMPLEMENTED]: 'Feature not implemented.',
 } as const;
 
 export const ERROR_MESSAGES = {

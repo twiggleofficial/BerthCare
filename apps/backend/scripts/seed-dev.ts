@@ -616,6 +616,29 @@ const syncLogEntries: SyncLogSeed[] = [
   },
 ];
 
+// Guard against running the destructive seed script in production.
+const productionDbTokens = ['prod', 'berthcare_prod'];
+
+const isProductionEnvironment = (): boolean => {
+  if (process.env.NODE_ENV === 'production') {
+    return true;
+  }
+
+  const databaseUrl = process.env.DATABASE_URL?.toLowerCase() ?? '';
+  const postgresDb = process.env.POSTGRES_DB?.toLowerCase() ?? '';
+
+  return productionDbTokens.some(
+    (token) => databaseUrl.includes(token) || postgresDb.includes(token),
+  );
+};
+
+if (isProductionEnvironment()) {
+  console.error(
+    'Refusing to run apps/backend/scripts/seed-dev.ts: detected production-like environment. Aborting to prevent destructive operations.',
+  );
+  process.exit(1);
+}
+
 const pool = new Pool({
   connectionString: resolveDatabaseUrl(),
   max: 1,
@@ -652,12 +675,14 @@ const seed = async (): Promise<void> => {
           INSERT INTO zones (id, code, name, description, timezone)
           VALUES ($1, $2, $3, $4, $5)
         `,
-        [zone.id, zone.code, zone.name, zone.description, zone.timezone]
+        [zone.id, zone.code, zone.name, zone.description, zone.timezone],
       );
     }
 
     for (const user of users) {
-      const normalizedActivationCode = user.activationCode ? user.activationCode.replace(/\D/g, '') : null;
+      const normalizedActivationCode = user.activationCode
+        ? user.activationCode.replace(/\D/g, '')
+        : null;
       const activationCodeHash = normalizedActivationCode
         ? await bcrypt.hash(normalizedActivationCode, 12)
         : null;
@@ -691,7 +716,7 @@ const seed = async (): Promise<void> => {
           user.zoneId,
           user.phone,
           user.deviceLimit,
-        ]
+        ],
       );
     }
 
@@ -725,7 +750,7 @@ const seed = async (): Promise<void> => {
           clientSeed.zoneId,
           clientSeed.carePlanSummary,
           clientSeed.specialInstructions,
-        ]
+        ],
       );
     }
 
@@ -749,7 +774,7 @@ const seed = async (): Promise<void> => {
           contact.relationship,
           contact.phone,
           contact.isPrimary,
-        ]
+        ],
       );
     }
 
@@ -773,7 +798,7 @@ const seed = async (): Promise<void> => {
           medication.dosage,
           medication.frequency,
           medication.instructions,
-        ]
+        ],
       );
     }
 
@@ -809,7 +834,7 @@ const seed = async (): Promise<void> => {
           visit.checkOutLongitude,
           visit.durationMinutes,
           visit.status,
-        ]
+        ],
       );
     }
 
@@ -835,7 +860,7 @@ const seed = async (): Promise<void> => {
           documentation.observations,
           documentation.concerns,
           documentation.signatureUrl,
-        ]
+        ],
       );
     }
 
@@ -852,7 +877,7 @@ const seed = async (): Promise<void> => {
           )
           VALUES ($1, $2, $3, $4, $5, $6)
         `,
-        [photo.id, photo.visitId, photo.s3Key, photo.fileName, photo.fileSize, photo.mimeType]
+        [photo.id, photo.visitId, photo.s3Key, photo.fileName, photo.fileSize, photo.mimeType],
       );
     }
 
@@ -878,7 +903,7 @@ const seed = async (): Promise<void> => {
           alert.category,
           alert.message,
           alert.resolvedAt,
-        ]
+        ],
       );
     }
 
@@ -893,7 +918,7 @@ const seed = async (): Promise<void> => {
           )
           VALUES ($1, $2, $3, $4)
         `,
-        [recipient.id, recipient.alertId, recipient.userId, recipient.readAt]
+        [recipient.id, recipient.alertId, recipient.userId, recipient.readAt],
       );
     }
 
@@ -925,7 +950,7 @@ const seed = async (): Promise<void> => {
           entry.clientTimestamp,
           entry.conflictResolved,
           JSON.stringify(entry.metadata),
-        ]
+        ],
       );
     }
 

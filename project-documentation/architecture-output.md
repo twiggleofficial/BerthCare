@@ -1219,7 +1219,7 @@ async function handleVoiceAlert(alertData: AlertData) {
             await initiateVoiceCall(backupcoordinator, alertData);
           }
         },
-        5 * 60 * 1000
+        5 * 60 * 1000,
       ); // 5 minutes
     }
   }, 30 * 1000); // 30 seconds
@@ -1398,7 +1398,7 @@ async function getVisitsWithClients(staffId: string) {
     WHERE v.staff_id = $1
     ORDER BY v.scheduled_start_time ASC
   `,
-    [staffId]
+    [staffId],
   );
 }
 ```
@@ -2082,8 +2082,8 @@ const useAppStore = create<AppState>()(
     {
       name: 'app-storage',
       storage: createJSONStorage(() => AsyncStorage),
-    }
-  )
+    },
+  ),
 );
 ```
 
@@ -2398,7 +2398,7 @@ const useVisitCheckIn = () => {
           location.coords.latitude,
           location.coords.longitude,
           visit.client.latitude,
-          visit.client.longitude
+          visit.client.longitude,
         );
 
         if (distance <= 150) {
@@ -2464,7 +2464,7 @@ const optimizePhoto = async (uri: string): Promise<string> => {
     {
       compress: 0.7, // 70% quality
       format: ImageManipulator.SaveFormat.JPEG,
-    }
+    },
   );
 
   return manipResult.uri;
@@ -2866,12 +2866,14 @@ describe('Authentication', () => {
     expect(activation.status).toBe(200);
     expect(activation.body).toHaveProperty('activationToken');
 
-    const completion = await request(app).post('/v1/auth/activate/complete').send({
-      activationToken: activation.body.activationToken,
-      pinHash: hashPin('123456'),
-      deviceName: 'Detox Simulator',
-      supportsBiometric: true,
-    });
+    const completion = await request(app)
+      .post('/v1/auth/activate/complete')
+      .send({
+        activationToken: activation.body.activationToken,
+        pinHash: hashPin('123456'),
+        deviceName: 'Detox Simulator',
+        supportsBiometric: true,
+      });
 
     expect(completion.status).toBe(200);
     expect(completion.body).toHaveProperty('accessToken');
@@ -3428,7 +3430,7 @@ app.use(
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 1000, // 1000 requests per window
     message: 'Too many requests, please try again later',
-  })
+  }),
 );
 
 // Auth endpoint rate limit (stricter)
@@ -3438,7 +3440,7 @@ app.use(
     windowMs: 15 * 60 * 1000,
     max: 5, // 5 login attempts per 15 minutes
     skipSuccessfulRequests: true,
-  })
+  }),
 );
 
 // Per-user rate limit
@@ -3447,7 +3449,7 @@ app.use(
     windowMs: 60 * 1000, // 1 minute
     max: 100, // 100 requests per minute per user
     keyGenerator: (req) => req.user?.id || req.ip,
-  })
+  }),
 );
 ```
 
@@ -3540,7 +3542,7 @@ app.use(
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     maxAge: 86400, // 24 hours
-  })
+  }),
 );
 ```
 
@@ -3570,7 +3572,7 @@ app.use(
     noSniff: true,
     xssFilter: true,
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-  })
+  }),
 );
 ```
 
@@ -3592,7 +3594,7 @@ await Keychain.setGenericPassword(
   {
     service: 'com.berthcare.app',
     accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED,
-  }
+  },
 );
 
 // Retrieve tokens
@@ -3625,7 +3627,7 @@ const checkDeviceSecurity = () => {
     Alert.alert(
       'Security Warning',
       'This device appears to be jailbroken/rooted. For security reasons, the app cannot run on modified devices.',
-      [{ text: 'Exit', onPress: () => BackHandler.exitApp() }]
+      [{ text: 'Exit', onPress: () => BackHandler.exitApp() }],
     );
     return false;
   }
@@ -3774,7 +3776,7 @@ const auditLog = async (
   entityId: string,
   oldValues: any,
   newValues: any,
-  req: Request
+  req: Request,
 ) => {
   await db.query(
     `INSERT INTO audit_log 
@@ -3790,7 +3792,7 @@ const auditLog = async (
       req.ip,
       req.get('user-agent'),
       req.get('x-device-id'),
-    ]
+    ],
   );
 };
 
@@ -4527,7 +4529,7 @@ const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
-    winston.format.json()
+    winston.format.json(),
   ),
   defaultMeta: {
     service: 'berthcare-api',

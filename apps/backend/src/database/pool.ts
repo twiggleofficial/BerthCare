@@ -24,7 +24,7 @@ export type DatabaseHealth = {
   };
 };
 
-const MIN_CONNECTIONS = 10;
+const MIN_CONNECTIONS = env.dbPool.min;
 const MAX_CONNECTIONS = 50;
 const IDLE_TIMEOUT_MS = 30_000;
 const CONNECTION_TIMEOUT_MS = 2_000;
@@ -92,7 +92,7 @@ const initializePool = async (createdPool: Pool): Promise<void> => {
         databaseLogger.error('PostgreSQL pool initialization failed after max retries', {
           error: serializeError(error),
         });
-        return;
+        throw error;
       }
 
       await wait(delayMs);
@@ -128,7 +128,7 @@ export const getDatabasePool = (): Pool | null => {
     return null;
   }
 
-  pool = new Pool({
+  const createdPool = new Pool({
     connectionString: env.postgresUrl,
     min: MIN_CONNECTIONS,
     max: MAX_CONNECTIONS,
@@ -137,7 +137,18 @@ export const getDatabasePool = (): Pool | null => {
     statement_timeout: STATEMENT_TIMEOUT_MS,
   });
 
-  attachPoolEventHandlers(pool);
+  if (pool) {
+    void createdPool.end().catch((error: unknown) => {
+      databaseLogger.debug('Failed to close duplicate PostgreSQL pool', {
+        error: serializeError(error),
+      });
+    });
+    return pool;
+  }
+
+  pool = createdPool;
+
+  attachPoolEventHandlers(createdPool);
 
   databaseLogger.info('PostgreSQL pool created', {
     config: {
@@ -149,9 +160,9 @@ export const getDatabasePool = (): Pool | null => {
     },
   });
 
-  initializationPromise = initializePool(pool);
+  initializationPromise = initializePool(createdPool);
 
-  return pool;
+  return createdPool;
 };
 
 export const waitForDatabasePool = async (): Promise<void> => {
@@ -237,6 +248,8 @@ export const closeDatabasePool = async (): Promise<void> => {
     await currentPool.end();
     databaseLogger.info('PostgreSQL pool closed', { metrics: metricsBeforeClose });
   } catch (error: unknown) {
-    databaseLogger.warn('Failed to close PostgreSQL pool cleanly', { error: serializeError(error) });
+    databaseLogger.warn('Failed to close PostgreSQL pool cleanly', {
+      error: serializeError(error),
+    });
   }
 };

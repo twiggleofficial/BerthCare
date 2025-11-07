@@ -4,15 +4,15 @@ BerthCare's infrastructure decisions follow the same lens as the product: make t
 
 ## Repository Layout
 
-| Path | What lives here | Why it exists |
-| --- | --- | --- |
-| `apps/backend` | Express / TypeScript API that targets ECS Fargate. | Keeps service logic close to infra definitions so schema and runtime evolve together. |
-| `apps/mobile` | React Native app (Expo) that ships the offline-first experience. | Shared repo keeps client + server aligned on API contracts. |
-| `libs/shared`, `libs/utils` | TypeScript packages consumed by backend and mobile. | Encourages code reuse while owning shared SDK surface. |
-| `infra/terraform/environments/staging` | Terraform for AWS networking, data stores, IAM, and observability. | Infrastructure as code makes stack ownership explicit and reviewable. |
-| `.github/workflows/ci.yml` | Quality gate (lint, type-check, test, audit, Semgrep). | Invisible tooling: every PR proves it is safe before humans read it. |
-| `docker-compose.yml`, `Makefile`, `.env.example` | Local replicas of Postgres, Redis, S3 (via LocalStack) plus bootstrap automation. | Questions defaults by matching cloud topology locally instead of relying on mocks. |
-| `project-documentation`, `design-documentation` | Architecture blueprint, research, and design artefacts. | Keeps rationale close so infra choices stay grounded in caregiver needs. |
+| Path                                             | What lives here                                                                   | Why it exists                                                                         |
+| ------------------------------------------------ | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `apps/backend`                                   | Express / TypeScript API that targets ECS Fargate.                                | Keeps service logic close to infra definitions so schema and runtime evolve together. |
+| `apps/mobile`                                    | React Native app (Expo) that ships the offline-first experience.                  | Shared repo keeps client + server aligned on API contracts.                           |
+| `libs/shared`, `libs/utils`                      | TypeScript packages consumed by backend and mobile.                               | Encourages code reuse while owning shared SDK surface.                                |
+| `infra/terraform/environments/staging`           | Terraform for AWS networking, data stores, IAM, and observability.                | Infrastructure as code makes stack ownership explicit and reviewable.                 |
+| `.github/workflows/ci.yml`                       | Quality gate (lint, type-check, test, audit, Semgrep).                            | Invisible tooling: every PR proves it is safe before humans read it.                  |
+| `docker-compose.yml`, `Makefile`, `.env.example` | Local replicas of Postgres, Redis, S3 (via LocalStack) plus bootstrap automation. | Questions defaults by matching cloud topology locally instead of relying on mocks.    |
+| `project-documentation`, `design-documentation`  | Architecture blueprint, research, and design artefacts.                           | Keeps rationale close so infra choices stay grounded in caregiver needs.              |
 
 ## CI/CD Pipeline
 

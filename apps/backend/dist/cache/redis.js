@@ -3,6 +3,22 @@ import { Redis } from 'ioredis';
 import { env } from '../config/environment.js';
 import { createLogger, serializeError } from '../logger/index.js';
 const cacheLogger = createLogger('cache');
+const parsePositiveIntEnv = (name, fallback) => {
+    const raw = process.env[name];
+    if (!raw) {
+        return fallback;
+    }
+    const value = Number.parseInt(raw, 10);
+    if (Number.isNaN(value) || value <= 0) {
+        cacheLogger.warn('Ignoring invalid numeric environment value; using fallback', {
+            name,
+            value: raw,
+            fallback,
+        });
+        return fallback;
+    }
+    return value;
+};
 export const CACHE_TTL = {
     client_list: 5 * 60,
     client_detail: 10 * 60,
@@ -10,13 +26,13 @@ export const CACHE_TTL = {
     visit_schedule: 2 * 60,
     care_plan: 30 * 60,
 };
-const POOL_MIN_CONNECTIONS = 2;
-const POOL_MAX_CONNECTIONS = 6;
-const CONNECTION_TIMEOUT_MS = 1_500;
-const INITIAL_BACKOFF_MS = 200;
-const MAX_BACKOFF_MS = 3_000;
-const MAX_RETRIES = 5;
-const INVALIDATE_SCAN_COUNT = 100;
+const POOL_MIN_CONNECTIONS = parsePositiveIntEnv('REDIS_POOL_MIN', 2);
+const POOL_MAX_CONNECTIONS = Math.max(parsePositiveIntEnv('REDIS_POOL_MAX', 6), POOL_MIN_CONNECTIONS);
+const CONNECTION_TIMEOUT_MS = parsePositiveIntEnv('REDIS_CONN_TIMEOUT_MS', 1_500);
+const INITIAL_BACKOFF_MS = parsePositiveIntEnv('REDIS_INIT_BACKOFF_MS', 200);
+const MAX_BACKOFF_MS = Math.max(parsePositiveIntEnv('REDIS_MAX_BACKOFF_MS', 3_000), INITIAL_BACKOFF_MS);
+const MAX_RETRIES = parsePositiveIntEnv('REDIS_MAX_RETRIES', 5);
+const INVALIDATE_SCAN_COUNT = parsePositiveIntEnv('REDIS_INVALIDATE_SCAN_COUNT', 100);
 const pool = {
     clients: [],
     initializationPromise: null,
@@ -28,8 +44,11 @@ const wait = (ms) => new Promise((resolve) => {
 const calculateBackoff = (attempt) => {
     const exponential = INITIAL_BACKOFF_MS * 2 ** (attempt - 1);
     const capped = Math.min(exponential, MAX_BACKOFF_MS);
-    const jitter = Math.round(Math.random() * 50);
-    return capped + jitter;
+    const jitterRange = Math.max(1, capped * 0.1);
+    const jitter = (Math.random() * 2 - 1) * jitterRange;
+    const jittered = capped + jitter;
+    const clamped = Math.min(Math.max(jittered, INITIAL_BACKOFF_MS), MAX_BACKOFF_MS);
+    return Math.round(clamped);
 };
 const buildRedisOptions = (connectionName) => ({
     enableAutoPipelining: true,

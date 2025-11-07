@@ -204,7 +204,10 @@ describe('ActivationService', () => {
       expect(accessPayload.deviceId).toBe(completion.deviceId);
       expect(accessPayload.activationMethod).toBe('biometric');
 
-      const refreshPayload = jwt.verify(completion.refreshToken, env.jwtSecret) as jwt.JwtPayload & {
+      const refreshPayload = jwt.verify(
+        completion.refreshToken,
+        env.jwtSecret,
+      ) as jwt.JwtPayload & {
         deviceId: string;
         tokenId: string;
         rotationId: string;
@@ -216,7 +219,10 @@ describe('ActivationService', () => {
       expect(refreshPayload.tokenId).toHaveLength(36);
       expect(refreshPayload.rotationId).toHaveLength(36);
 
-      const refreshTokenHash = crypto.createHash('sha256').update(completion.refreshToken).digest('hex');
+      const refreshTokenHash = crypto
+        .createHash('sha256')
+        .update(completion.refreshToken)
+        .digest('hex');
 
       const sessionResult = await db.pool.query<DeviceSessionRow>(
         `

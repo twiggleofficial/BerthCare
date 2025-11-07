@@ -89,7 +89,10 @@ const isEligibleRole = (role: string): role is 'caregiver' | 'coordinator' => {
   return role === 'caregiver' || role === 'coordinator';
 };
 
-const buildAttemptDetail = (outcome: ActivationAttemptOutcome, detail?: string | null): string | null => {
+const buildAttemptDetail = (
+  outcome: ActivationAttemptOutcome,
+  detail?: string | null,
+): string | null => {
   if (!detail) {
     return null;
   }
@@ -139,7 +142,9 @@ const isActivationSessionUsable = (session: ActivationSessionWithUser, now: Date
   return true;
 };
 
-export const createActivationService = (options: ActivationServiceOptions = {}): ActivationService => {
+export const createActivationService = (
+  options: ActivationServiceOptions = {},
+): ActivationService => {
   const repository = options.repository ?? createActivationRepository();
   const deviceSessions = options.deviceSessions ?? createDeviceSessionRepository();
   const logger = createLogger('auth.activate');
@@ -157,7 +162,12 @@ export const createActivationService = (options: ActivationServiceOptions = {}):
 
       if (!pool) {
         logger.error('Activation service unavailable - database pool not configured');
-        throw new ActivationError('Activation service unavailable', 503, 'AUTH_SERVICE_UNAVAILABLE', false);
+        throw new ActivationError(
+          'Activation service unavailable',
+          503,
+          'AUTH_SERVICE_UNAVAILABLE',
+          false,
+        );
       }
 
       const normalizedActivationCode = normalizeActivationCode(payload.activationCode);
@@ -287,7 +297,10 @@ export const createActivationService = (options: ActivationServiceOptions = {}):
             ...attemptContext,
             outcome: 'device_enrolled',
             success: false,
-            detail: buildAttemptDetail('device_enrolled', 'Existing activation session still valid'),
+            detail: buildAttemptDetail(
+              'device_enrolled',
+              'Existing activation session still valid',
+            ),
           });
           await client.query('COMMIT');
           committed = true;
@@ -304,7 +317,10 @@ export const createActivationService = (options: ActivationServiceOptions = {}):
         await repository.revokePendingSessions(client, user.id, payload.deviceFingerprint);
 
         const activationToken = crypto.randomBytes(32).toString('hex');
-        const activationTokenHash = crypto.createHash('sha256').update(activationToken).digest('hex');
+        const activationTokenHash = crypto
+          .createHash('sha256')
+          .update(activationToken)
+          .digest('hex');
         const expiresAt = new Date(Date.now() + ACTIVATION_TOKEN_TTL_MS);
 
         const sessionRecord: ActivationSessionRecord = {
@@ -367,17 +383,30 @@ export const createActivationService = (options: ActivationServiceOptions = {}):
           error: error instanceof Error ? error.message : String(error),
         });
 
-        throw new ActivationError('Failed to process activation', 500, 'AUTH_ACTIVATION_FAILED', false);
+        throw new ActivationError(
+          'Failed to process activation',
+          500,
+          'AUTH_ACTIVATION_FAILED',
+          false,
+        );
       } finally {
         client.release();
       }
     },
-    async completeActivation(payload: ActivationCompletionPayload, context: ActivationCompletionContext) {
+    async completeActivation(
+      payload: ActivationCompletionPayload,
+      context: ActivationCompletionContext,
+    ) {
       const pool = resolvePool();
 
       if (!pool) {
         logger.error('Activation service unavailable - database pool not configured');
-        throw new ActivationError('Activation service unavailable', 503, 'AUTH_SERVICE_UNAVAILABLE', false);
+        throw new ActivationError(
+          'Activation service unavailable',
+          503,
+          'AUTH_SERVICE_UNAVAILABLE',
+          false,
+        );
       }
 
       const client = await pool.connect();
@@ -388,13 +417,20 @@ export const createActivationService = (options: ActivationServiceOptions = {}):
 
         const now = new Date();
         const activationTokenHash = createTokenHash(payload.activationToken);
-        const session = await repository.findActivationSessionByTokenHash(client, activationTokenHash);
+        const session = await repository.findActivationSessionByTokenHash(
+          client,
+          activationTokenHash,
+        );
 
         if (!session || !isActivationSessionUsable(session, now)) {
           logger.warn('Activation completion rejected - invalid session', {
             reason: session ? 'session_unusable' : 'session_not_found',
           });
-          throw new ActivationError('Invalid activation token', 400, 'AUTH_INVALID_ACTIVATION_TOKEN');
+          throw new ActivationError(
+            'Invalid activation token',
+            400,
+            'AUTH_INVALID_ACTIVATION_TOKEN',
+          );
         }
 
         const existingDeviceSession = await deviceSessions.findActiveByFingerprint(
@@ -471,7 +507,7 @@ export const createActivationService = (options: ActivationServiceOptions = {}):
           supportsBiometric: payload.supportsBiometric,
           pinScryptHash: pinHash.hash,
           pinScryptSalt: pinHash.salt,
-          pinScryptParams: pinHash.params,
+          pinScryptParams: JSON.stringify(pinHash.params),
           tokenId,
           rotationId,
           refreshTokenHash,
@@ -516,7 +552,12 @@ export const createActivationService = (options: ActivationServiceOptions = {}):
           error: error instanceof Error ? error.message : String(error),
         });
 
-        throw new ActivationError('Failed to complete activation', 500, 'AUTH_ACTIVATION_COMPLETION_FAILED', false);
+        throw new ActivationError(
+          'Failed to complete activation',
+          500,
+          'AUTH_ACTIVATION_COMPLETION_FAILED',
+          false,
+        );
       } finally {
         client.release();
       }

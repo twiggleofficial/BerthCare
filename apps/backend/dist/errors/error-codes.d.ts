@@ -1,3 +1,4 @@
+export declare const SERVER_NOT_IMPLEMENTED = "SERVER_NOT_IMPLEMENTED";
 export declare const SPEC_ERROR_MESSAGES: {
     readonly AUTH_INVALID_CREDENTIALS: "Invalid email or password";
     readonly AUTH_INVALID_ACTIVATION_CODE: "Activation code not recognized";
@@ -38,6 +39,7 @@ export declare const ERROR_MESSAGES: {
     AUTH_INVALID_SESSION_REVOKE_PAYLOAD: "Session revoke payload is invalid.";
     AUTH_SESSION_NOT_FOUND: "Device session could not be found.";
     AUTH_DEVICE_MISMATCH: "Request does not match the active device session.";
+    SERVER_NOT_IMPLEMENTED: "Feature not implemented.";
     AUTH_INVALID_CREDENTIALS: "Invalid email or password";
     AUTH_INVALID_ACTIVATION_CODE: "Activation code not recognized";
     AUTH_ACTIVATION_EXPIRED: "Activation code has expired";

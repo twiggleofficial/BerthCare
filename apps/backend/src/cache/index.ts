@@ -1,8 +1,4 @@
-import type {
-  CacheHealth,
-  CacheHealthState,
-  CacheSetOptions,
-} from './redis.js';
+import type { CacheHealth, CacheHealthState, CacheSetOptions } from './redis.js';
 import {
   CACHE_TTL,
   closeRedisConnections,
@@ -26,8 +22,4 @@ export {
   getCacheHealth,
   getRedisClient,
   closeRedisConnections,
-};
-
-export const closeRedisConnection = async (): Promise<void> => {
-  await closeRedisConnections();
 };

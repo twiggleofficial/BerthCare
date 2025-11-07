@@ -15,11 +15,7 @@ import {
 } from './activation-service.js';
 import type { AuthorizationRequest } from './middleware.js';
 import { loadDeviceSession } from './middleware.js';
-import {
-  createSessionService,
-  SessionError,
-  type SessionService,
-} from './session-service.js';
+import { createSessionService, SessionError, type SessionService } from './session-service.js';
 
 const authLogger = createLogger('auth');
 
@@ -74,10 +70,7 @@ const activationSchema = Joi.object({
 let generatedHash: string | null = null;
 
 const activationCompletionSchema = Joi.object({
-  activationToken: Joi.string()
-    .length(64)
-    .hex()
-    .required(),
+  activationToken: Joi.string().length(64).hex().required(),
   pin: Joi.string()
     .pattern(/^\d{6}$/)
     .message('PIN must be exactly 6 digits')
@@ -88,16 +81,12 @@ const activationCompletionSchema = Joi.object({
 
 const sessionRefreshSchema = Joi.object({
   refreshToken: Joi.string().max(2048).required(),
-  deviceId: Joi.string()
-    .guid({ version: 'uuidv4' })
-    .required(),
+  deviceId: Joi.string().guid({ version: 'uuidv4' }).required(),
 });
 
 const sessionRevokeSchema = Joi.object({
   refreshToken: Joi.string().max(2048).required(),
-  deviceId: Joi.string()
-    .guid({ version: 'uuidv4' })
-    .required(),
+  deviceId: Joi.string().guid({ version: 'uuidv4' }).required(),
   reason: Joi.string().max(255).optional(),
 });
 
@@ -111,13 +100,18 @@ const resolveDemoPasswordHash = async (): Promise<string> => {
   }
 
   generatedHash = await bcrypt.hash('CareTeam!23', 10);
-  authLogger.warn('Using generated development credential hash; configure AUTH_DEMO_PASSWORD_HASH for consistency');
+  authLogger.warn(
+    'Using generated development credential hash; configure AUTH_DEMO_PASSWORD_HASH for consistency',
+  );
 
   return generatedHash;
 };
 
 const verifyCredentials = async (email: string, password: string): Promise<boolean> => {
-  if (email !== env.authDemo.email) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const expectedEmail = env.authDemo.email.trim().toLowerCase();
+
+  if (normalizedEmail !== expectedEmail) {
     return false;
   }
 
@@ -186,7 +180,7 @@ export const createAuthRouter = (): Router => {
     const requestId = typeof res.locals.requestId === 'string' ? res.locals.requestId : undefined;
     res.status(501).json(
       createErrorResponse({
-        code: 'SERVER_UNKNOWN_ERROR',
+        code: 'SERVER_NOT_IMPLEMENTED',
         message: 'Account profile endpoint not implemented yet',
         requestId,
       }),
@@ -339,69 +333,65 @@ export const createAuthV1Router = (options: CreateAuthV1RouterOptions = {}): Rou
     }
   });
 
-  router.post(
-    '/session/revoke',
-    loadDeviceSession(sessionService),
-    async (req, res, next) => {
-      // Revocation flow aligns with project-documentation/architecture-output.md – Session Management.
-      const validation = sessionRevokeSchema.validate(req.body, {
-        abortEarly: false,
-        stripUnknown: true,
-      }) as Joi.ValidationResult<SessionRevokeBody>;
-      const requestId = typeof res.locals.requestId === 'string' ? res.locals.requestId : undefined;
+  router.post('/session/revoke', loadDeviceSession(sessionService), async (req, res, next) => {
+    // Revocation flow aligns with project-documentation/architecture-output.md – Session Management.
+    const validation = sessionRevokeSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true,
+    }) as Joi.ValidationResult<SessionRevokeBody>;
+    const requestId = typeof res.locals.requestId === 'string' ? res.locals.requestId : undefined;
 
-      if (validation.error) {
-        res.status(400).json(
+    if (validation.error) {
+      res.status(400).json(
+        createErrorResponse({
+          code: 'AUTH_INVALID_SESSION_REVOKE_PAYLOAD',
+          message: 'Invalid session revoke request',
+          details: validation.error.details.map((detail) => detail.message),
+          requestId,
+        }),
+      );
+      return;
+    }
+
+    const authRequest = req as AuthorizationRequest;
+    const deviceSession = authRequest.deviceSession;
+
+    if (!deviceSession) {
+      next(new Error('Device session context missing'));
+      return;
+    }
+
+    const payload = validation.value;
+
+    if (payload.deviceId !== deviceSession.id) {
+      res.status(403).json(
+        createErrorResponse({
+          code: 'AUTH_DEVICE_MISMATCH',
+          message: 'This request does not match the active device session.',
+          requestId,
+        }),
+      );
+      return;
+    }
+
+    try {
+      await sessionService.revokeSession(payload);
+      res.status(200).json({ status: 'revoked' });
+    } catch (error) {
+      if (error instanceof SessionError) {
+        res.status(error.status).json(
           createErrorResponse({
-            code: 'AUTH_INVALID_SESSION_REVOKE_PAYLOAD',
-            message: 'Invalid session revoke request',
-            details: validation.error.details.map((detail) => detail.message),
+            code: error.code,
+            message: error.expose ? error.message : undefined,
             requestId,
           }),
         );
         return;
       }
 
-      const authRequest = req as AuthorizationRequest;
-      const deviceSession = authRequest.deviceSession;
-
-      if (!deviceSession) {
-        next(new Error('Device session context missing'));
-        return;
-      }
-
-      const payload = validation.value;
-
-      if (payload.deviceId !== deviceSession.id) {
-        res.status(403).json(
-          createErrorResponse({
-            code: 'AUTH_DEVICE_MISMATCH',
-            message: 'This request does not match the active device session.',
-            requestId,
-          }),
-        );
-        return;
-      }
-
-      try {
-        await sessionService.revokeSession(payload);
-        res.status(200).json({ status: 'revoked' });
-      } catch (error) {
-        if (error instanceof SessionError) {
-          res.status(error.status).json(
-            createErrorResponse({
-              code: error.code,
-              message: error.expose ? error.message : undefined,
-              requestId,
-            }),
-          );
-          return;
-        }
-
-        next(error);
-      }
-    },
-  );
+      next(error);
+    }
+  });
 
   return router;
 };

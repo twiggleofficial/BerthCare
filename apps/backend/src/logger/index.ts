@@ -1,11 +1,14 @@
+import type { Logger } from 'winston';
 import { format, transports, createLogger as createWinstonLogger } from 'winston';
 
 import { projectMetadata } from '@berthcare/shared';
 
 import { env } from '../config/environment.js';
 
+export type { Logger };
+
 const baseLogger = createWinstonLogger({
-  level: process.env.LOG_LEVEL ?? 'info',
+  level: env.logLevel ?? 'info',
   defaultMeta: {
     service: projectMetadata.service,
     version: projectMetadata.version,
@@ -22,7 +25,7 @@ const baseLogger = createWinstonLogger({
 
 export const rootLogger = baseLogger;
 
-export const createLogger = (scope: string) => {
+export const createLogger = (scope: string): Logger => {
   return baseLogger.child({ scope });
 };
 

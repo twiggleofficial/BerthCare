@@ -133,7 +133,10 @@ describe('ActivationService', () => {
             expect(refreshPayload.deviceId).toBe(completion.deviceId);
             expect(refreshPayload.tokenId).toHaveLength(36);
             expect(refreshPayload.rotationId).toHaveLength(36);
-            const refreshTokenHash = crypto.createHash('sha256').update(completion.refreshToken).digest('hex');
+            const refreshTokenHash = crypto
+                .createHash('sha256')
+                .update(completion.refreshToken)
+                .digest('hex');
             const sessionResult = await db.pool.query(`
           SELECT
             user_id,

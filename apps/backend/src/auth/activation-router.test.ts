@@ -99,10 +99,15 @@ const createActivationService = (
 
 type RouteHandler = (req: Request, res: Response, next: (error?: unknown) => void) => unknown;
 
-const resolveRouteStack = (router: ReturnType<typeof createAuthV1Router>, path: string): RouteHandler[] => {
-  const layer = (router as unknown as { stack: Array<{ route?: { path: string; stack: Array<{ handle: RequestHandler }> } }> }).stack.find(
-    (item) => item.route?.path === path,
-  );
+const resolveRouteStack = (
+  router: ReturnType<typeof createAuthV1Router>,
+  path: string,
+): RouteHandler[] => {
+  const layer = (
+    router as unknown as {
+      stack: Array<{ route?: { path: string; stack: Array<{ handle: RequestHandler }> } }>;
+    }
+  ).stack.find((item) => item.route?.path === path);
 
   if (!layer?.route?.stack?.length) {
     throw new Error(`Route handler not found for path: ${path}`);
@@ -471,9 +476,9 @@ describe('createAuthV1Router', () => {
   it('maps session refresh errors to API responses', async () => {
     const activationService = createActivationService();
     const sessionService = {
-      refreshSession: vi.fn().mockRejectedValue(
-        new SessionError('Invalid refresh token', 401, 'AUTH_TOKEN_INVALID'),
-      ),
+      refreshSession: vi
+        .fn()
+        .mockRejectedValue(new SessionError('Invalid refresh token', 401, 'AUTH_TOKEN_INVALID')),
       revokeSession: vi.fn(),
       loadSessionContext: vi.fn(),
     };
@@ -542,7 +547,6 @@ describe('createAuthV1Router', () => {
       },
     });
 
-    // Debug: inspect payload when validation fails unexpectedly
     expect(res.statusCode).toBe(200);
     expect(res.body).toEqual({ status: 'revoked' });
     expect(sessionService.loadSessionContext).toHaveBeenCalledWith('access-token');
@@ -638,9 +642,9 @@ describe('createAuthV1Router', () => {
     const activationService = createActivationService();
     const sessionService = {
       refreshSession: vi.fn(),
-      revokeSession: vi.fn().mockRejectedValue(
-        new SessionError('Invalid refresh token', 401, 'AUTH_TOKEN_INVALID'),
-      ),
+      revokeSession: vi
+        .fn()
+        .mockRejectedValue(new SessionError('Invalid refresh token', 401, 'AUTH_TOKEN_INVALID')),
       loadSessionContext: vi.fn().mockResolvedValue({
         user: {
           id: 'user-1',
@@ -695,9 +699,9 @@ describe('createAuthV1Router', () => {
     const sessionService = {
       refreshSession: vi.fn(),
       revokeSession: vi.fn(),
-      loadSessionContext: vi.fn().mockRejectedValue(
-        new SessionError('Device revoked', 423, 'AUTH_DEVICE_REVOKED'),
-      ),
+      loadSessionContext: vi
+        .fn()
+        .mockRejectedValue(new SessionError('Device revoked', 423, 'AUTH_DEVICE_REVOKED')),
     };
 
     const router = createAuthV1Router({ activationService, sessionService });
