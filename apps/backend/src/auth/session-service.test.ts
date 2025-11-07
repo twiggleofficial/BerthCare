@@ -11,8 +11,8 @@ import type { SessionError } from './session-service.js';
 import { seedDeviceSession } from './test-seeders.js';
 import { setupTestDatabase } from './test-utils.js';
 
-// Test fixture for invalid JWT signature verification
-const TEST_INVALID_SECRET = 'incorrect-secret';
+// Test fixture for invalid JWT signature verification - dynamically generated
+const TEST_INVALID_SECRET = crypto.randomBytes(32).toString('hex');
 
 type DeviceSessionMetaRow = {
   token_id: string;
