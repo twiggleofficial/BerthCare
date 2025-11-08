@@ -6,6 +6,11 @@ import { describe, expect, it } from 'vitest';
 import { projectMetadata } from '@berthcare/shared';
 
 import { env } from '../config/environment.js';
+import {
+  createDeviceSessionRepository,
+  DeviceSessionRotationConflictError,
+  type DeviceSessionRepository,
+} from './device-session-repository.js';
 import { createSessionService } from './session-service.js';
 import type { SessionError } from './session-service.js';
 import { seedDeviceSession } from './test-seeders.js';
@@ -299,10 +304,31 @@ describe('SessionService', () => {
 
   it('revokes the device session when concurrent refresh attempts reuse a token', async () => {
     const db = await setupTestDatabase();
-    const service = createSessionService({ pool: db.pool });
+    const baseRepository = createDeviceSessionRepository();
+    const rotatedTokens = new Set<string>();
+    let conflictTokenId: string | null = null;
+
+    const repository: DeviceSessionRepository = {
+      ...baseRepository,
+      async rotateDeviceSession(client, input) {
+        if (conflictTokenId && input.expectedTokenId === conflictTokenId) {
+          if (rotatedTokens.has(input.expectedTokenId)) {
+            throw new DeviceSessionRotationConflictError(
+              `Simulated rotation conflict for token ${input.expectedTokenId}`,
+            );
+          }
+          rotatedTokens.add(input.expectedTokenId);
+        }
+
+        return baseRepository.rotateDeviceSession(client, input);
+      },
+    };
+
+    const service = createSessionService({ pool: db.pool, repository });
 
     try {
       const seed = await seedDeviceSession(db);
+      conflictTokenId = seed.tokenId;
 
       const firstAttempt = service.refreshSession(
         {
@@ -311,8 +337,6 @@ describe('SessionService', () => {
         },
         {},
       );
-
-      await new Promise((resolve) => setTimeout(resolve, 0));
 
       const secondAttempt = service.refreshSession(
         {

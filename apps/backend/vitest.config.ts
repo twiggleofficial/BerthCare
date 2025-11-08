@@ -14,7 +14,11 @@ export default defineConfig({
       reporter: ['text', 'lcov'],
       reportsDirectory: 'coverage',
       provider: 'v8',
-      include: ['src/**/*.ts', '!src/**/*.test.ts'],
+      // Include all backend source files and skip tests so every module contributes.
+      include: [
+        'src/**/*.ts',
+        '!src/**/*.test.ts',
+      ],
       thresholds: {
         lines: 0.8,
         statements: 0.8,

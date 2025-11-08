@@ -67,8 +67,6 @@ const activationSchema = Joi.object({
   appVersion: Joi.string().max(50).required(),
 });
 
-let generatedHash: string | null = null;
-
 const activationCompletionSchema = Joi.object({
   activationToken: Joi.string().length(64).hex().required(),
   pin: Joi.string()
@@ -90,22 +88,26 @@ const sessionRevokeSchema = Joi.object({
   reason: Joi.string().max(255).optional(),
 });
 
-const resolveDemoPasswordHash = async (): Promise<string> => {
-  if (env.authDemo.passwordHash) {
-    return env.authDemo.passwordHash;
-  }
+const resolveDemoPasswordHash = (() => {
+  let cachedHash: string | null = null;
 
-  if (generatedHash) {
-    return generatedHash;
-  }
+  return async (): Promise<string> => {
+    if (env.authDemo.passwordHash) {
+      return env.authDemo.passwordHash;
+    }
 
-  generatedHash = await bcrypt.hash('CareTeam!23', 10);
-  authLogger.warn(
-    'Using generated development credential hash; configure AUTH_DEMO_PASSWORD_HASH for consistency',
-  );
+    if (cachedHash) {
+      return cachedHash;
+    }
 
-  return generatedHash;
-};
+    cachedHash = await bcrypt.hash('CareTeam!23', 10);
+    authLogger.warn(
+      'Using generated development credential hash; configure AUTH_DEMO_PASSWORD_HASH for consistency',
+    );
+
+    return cachedHash;
+  };
+})();
 
 const verifyCredentials = async (email: string, password: string): Promise<boolean> => {
   const normalizedEmail = email.trim().toLowerCase();
@@ -354,7 +356,12 @@ export const createAuthV1Router = (options: CreateAuthV1RouterOptions = {}): Rou
     const deviceSession = authRequest.deviceSession;
 
     if (!deviceSession) {
-      next(new Error('Device session context missing'));
+      next(
+        Object.assign(new Error('Device session context missing'), {
+          status: 401,
+          code: 'AUTH_SESSION_NOT_FOUND',
+        }),
+      );
       return;
     }
 

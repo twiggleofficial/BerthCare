@@ -23,7 +23,6 @@ const activationSchema = Joi.object({
     deviceFingerprint: Joi.string().max(255).required(),
     appVersion: Joi.string().max(50).required(),
 });
-let generatedHash = null;
 const activationCompletionSchema = Joi.object({
     activationToken: Joi.string().length(64).hex().required(),
     pin: Joi.string()
@@ -42,17 +41,20 @@ const sessionRevokeSchema = Joi.object({
     deviceId: Joi.string().guid({ version: 'uuidv4' }).required(),
     reason: Joi.string().max(255).optional(),
 });
-const resolveDemoPasswordHash = async () => {
-    if (env.authDemo.passwordHash) {
-        return env.authDemo.passwordHash;
-    }
-    if (generatedHash) {
-        return generatedHash;
-    }
-    generatedHash = await bcrypt.hash('CareTeam!23', 10);
-    authLogger.warn('Using generated development credential hash; configure AUTH_DEMO_PASSWORD_HASH for consistency');
-    return generatedHash;
-};
+const resolveDemoPasswordHash = (() => {
+    let cachedHash = null;
+    return async () => {
+        if (env.authDemo.passwordHash) {
+            return env.authDemo.passwordHash;
+        }
+        if (cachedHash) {
+            return cachedHash;
+        }
+        cachedHash = await bcrypt.hash('CareTeam!23', 10);
+        authLogger.warn('Using generated development credential hash; configure AUTH_DEMO_PASSWORD_HASH for consistency');
+        return cachedHash;
+    };
+})();
 const verifyCredentials = async (email, password) => {
     const normalizedEmail = email.trim().toLowerCase();
     const expectedEmail = env.authDemo.email.trim().toLowerCase();
@@ -247,7 +249,10 @@ export const createAuthV1Router = (options = {}) => {
         const authRequest = req;
         const deviceSession = authRequest.deviceSession;
         if (!deviceSession) {
-            next(new Error('Device session context missing'));
+            next(Object.assign(new Error('Device session context missing'), {
+                status: 401,
+                code: 'AUTH_SESSION_NOT_FOUND',
+            }));
             return;
         }
         const payload = validation.value;
