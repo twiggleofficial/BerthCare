@@ -123,7 +123,8 @@ export const createLogger = (scope: string, baseContext: LogMetadata = {}): Logg
   const normalizedBase = normalizeMetadata(baseContext);
 
   const log = (level: LogLevel) => {
-    return (message: string, metadata?: LogMetadata) => emit(scope, level, message, normalizedBase, metadata);
+    return (message: string, metadata?: LogMetadata) =>
+      emit(scope, level, message, normalizedBase, metadata);
   };
 
   return {
@@ -131,6 +132,7 @@ export const createLogger = (scope: string, baseContext: LogMetadata = {}): Logg
     info: log('info'),
     warn: log('warn'),
     error: log('error'),
-    withScope: (additional: LogMetadata) => createLogger(scope, { ...normalizedBase, ...additional }),
+    withScope: (additional: LogMetadata) =>
+      createLogger(scope, { ...normalizedBase, ...additional }),
   };
 };

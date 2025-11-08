@@ -7,6 +7,7 @@
     "build:clean": "pnpm exec tsc -b --clean",
     "build": "pnpm exec tsc -b",
     "type-check": "pnpm exec tsc -b --pretty false",
+    "test": "pnpm -r --if-present test",
     "lint": "pnpm exec eslint --max-warnings 0 \"{apps,libs}/**/*.{ts,tsx}\"",
     "lint:fix": "pnpm exec eslint \"{apps,libs}/**/*.{ts,tsx}\" --fix",
     "format": "pnpm exec prettier \"**/*.{ts,tsx,js,jsx,json,md}\" --check",
@@ -22,5 +23,13 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "prettier": "^3.2.5",
     "typescript": "^5.4.5"
+  },
+  "pnpm": {
+    "// overrides rationale (security + tooling constraints)": "semver>=7.6.0 pulls in the regex-DoS fix flagged by npm audit runs, send>=0.19.0 keeps the Express stack on the patched template-injection/XSS issue via SendStream.redirect (CVE-2024-43799), and @react-native-community/cli@20.0.2 ensures metro tooling stays in lockstep with apps/mobile (see docs/architecture.md#repository-layout).",
+    "overrides": {
+      "@react-native-community/cli": "^20.0.2",
+      "send": "^0.19.0",
+      "semver@^7.0.0": "^7.6.0"
+    }
   }
 }

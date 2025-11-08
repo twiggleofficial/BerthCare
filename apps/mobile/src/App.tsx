@@ -7,16 +7,15 @@ import { bootstrapMonitoring } from './monitoring';
 const AppView: React.FC = () => {
   React.useEffect(() => {
     try {
-      bootstrapMonitoring();
-    } catch (error) {
-      console.error('Failed to initialize monitoring:', error);
+      const runMonitoring: () => void = bootstrapMonitoring;
+      runMonitoring();
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // eslint-disable-next-line no-console
+      console.error('Failed to initialize monitoring:', errorMessage);
     }
   }, []);
 
-  return (
-    <SafeAreaView>
-
-const AppView: React.FC = () => {
   return (
     <SafeAreaView>
       <Text>

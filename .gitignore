@@ -6,7 +6,7 @@ Pods/
 # Build artifacts
 /dist/
 /build/
-/coverage/
+/**/coverage/
 *.tsbuildinfo
 *.jsbundle
 android/app/build/
