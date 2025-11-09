@@ -166,7 +166,7 @@ const resolveStateStyles = (
       shadowOpacity: 0.1,
       shadowOffset: { width: 0, height: 0 },
       shadowRadius: 4,
-      elevation: 0,
+      elevation: 2,
       textColor: colors.functional.text.primary,
       placeholderColor: colors.functional.text.tertiary,
     };
@@ -181,7 +181,7 @@ const resolveStateStyles = (
       shadowOpacity: 0.12,
       shadowOffset: { width: 0, height: 0 },
       shadowRadius: 6,
-      elevation: 0,
+      elevation: 1,
       textColor: colors.functional.text.primary,
       placeholderColor: colors.functional.text.tertiary,
     };
@@ -196,7 +196,7 @@ const resolveStateStyles = (
       shadowOpacity: 0.16,
       shadowOffset: { width: 0, height: 0 },
       shadowRadius: 4,
-      elevation: 0,
+      elevation: 2,
       textColor: colors.functional.text.primary,
       placeholderColor: colors.functional.text.tertiary,
     };
