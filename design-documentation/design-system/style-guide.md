@@ -111,7 +111,7 @@ BerthCare focuses on essential home care workflows:
 
 ### Buttons
 
-**Primary Button**
+#### Primary Button
 - Height: 48px minimum (56px comfortable)
 - Padding: 16px horizontal
 - Font: 17px Semibold
@@ -119,19 +119,19 @@ BerthCare focuses on essential home care workflows:
 - Corner radius: 12px
 - Touch target: 48px × 48px minimum
 
-**Secondary Button**
+#### Secondary Button
 - Same dimensions as primary
 - Color: Trust Blue on transparent
 - Border: 1px solid Trust Blue
 
-**Icon-Only Button**
+#### Icon-Only Button
 - Size: 48px × 48px
 - Icon: 24px centered
 - Always include accessibility label
 
 ### Forms
 
-**Text Input**
+#### Text Input
 - Height: 48px
 - Padding: 16px horizontal
 - Font: 17px Regular
@@ -139,32 +139,32 @@ BerthCare focuses on essential home care workflows:
 - Focus: 2px solid Trust Blue
 - Corner radius: 12px
 
-**Field Spacing**
+#### Field Spacing
 - Label to input: 8px
 - Between fields: 20px
 - Helper text: 4px below field
 
 ### Cards
 
-**Standard Card**
+#### Standard Card
 - Padding: 16px (mobile), 24px (tablet)
 - Corner radius: 12px
 - Shadow: Level 1 (resting)
 - Background: White
 
-**Card Spacing**
+#### Card Spacing
 - Between cards: 16px
 - Card to screen edge: 16px
 
 ### Navigation
 
-**Bottom Tab Bar**
+#### Bottom Tab Bar
 - Height: 56px + safe area
 - Icons: 24px
 - 3-5 tabs maximum
 - Active state: Trust Blue filled icon
 
-**Top Navigation**
+#### Top Navigation
 - Height: 56px + safe area
 - Title: 20px Semibold
 - Back button: 48px × 48px touch target

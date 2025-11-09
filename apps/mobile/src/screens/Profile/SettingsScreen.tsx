@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { Button, Switch, Text } from 'react-native-paper';
 import { useCallback, useEffect, useState } from 'react';
 
 import type { ProfileStackScreenProps } from '../../navigation/types';
+import { createLogger } from '../../services/logger';
 
 type SettingsProps = ProfileStackScreenProps<'Settings'>;
 
@@ -11,6 +12,7 @@ const OFFLINE_SYNC_KEY = 'settings.offlineSync';
 const QUIET_NOTIFICATIONS_KEY = 'settings.notifications';
 const DEFAULT_OFFLINE_SYNC = true;
 const DEFAULT_QUIET_NOTIFICATIONS = true;
+const settingsLogger = createLogger('SettingsScreen');
 
 const parseStoredBoolean = (value: string | null, fallback: boolean) => {
   if (value === null) {
@@ -62,7 +64,7 @@ export function SettingsScreen({ navigation }: SettingsProps) {
           ),
         );
       } catch (error) {
-        console.warn('Failed to load settings', error);
+        settingsLogger.warn('Failed to load settings', { error });
       }
     };
 
@@ -73,28 +75,48 @@ export function SettingsScreen({ navigation }: SettingsProps) {
     };
   }, []);
 
-  const persistSetting = useCallback(async (key: string, value: boolean) => {
-    try {
-      await AsyncStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-      console.warn(`Failed to save setting for ${key}`, error);
-    }
+  const notifyPersistenceFailure = useCallback(() => {
+    Alert.alert('Unable to update settings', 'Please try again.');
   }, []);
 
-  const handleToggleOfflineSync = useCallback(
-    (value: boolean) => {
-      setOfflineSync(value);
-      void persistSetting(OFFLINE_SYNC_KEY, value);
+  const persistSetting = useCallback(
+    async (key: string, value: boolean): Promise<boolean> => {
+      try {
+        await AsyncStorage.setItem(key, JSON.stringify(value));
+        return true;
+      } catch (error) {
+        settingsLogger.warn('Failed to save setting', { key, value, error });
+        notifyPersistenceFailure();
+        return false;
+      }
     },
-    [persistSetting],
+    [notifyPersistenceFailure],
+  );
+
+  const handleToggleOfflineSync = useCallback(
+    async (value: boolean) => {
+      const previousValue = offlineSync;
+      setOfflineSync(value);
+
+      const persisted = await persistSetting(OFFLINE_SYNC_KEY, value);
+      if (!persisted) {
+        setOfflineSync(previousValue);
+      }
+    },
+    [offlineSync, persistSetting],
   );
 
   const handleToggleNotifications = useCallback(
-    (value: boolean) => {
+    async (value: boolean) => {
+      const previousValue = quietNotifications;
       setQuietNotifications(value);
-      void persistSetting(QUIET_NOTIFICATIONS_KEY, value);
+
+      const persisted = await persistSetting(QUIET_NOTIFICATIONS_KEY, value);
+      if (!persisted) {
+        setQuietNotifications(previousValue);
+      }
     },
-    [persistSetting],
+    [persistSetting, quietNotifications],
   );
 
   return (

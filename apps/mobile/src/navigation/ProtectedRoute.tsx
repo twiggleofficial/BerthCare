@@ -205,7 +205,16 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
       try {
         const response = await refreshSession({ refreshToken, deviceId });
-        setTokens({
+        const currentState = useAppStore.getState();
+        const tokensUnchanged =
+          currentState.tokens.refreshToken === refreshToken &&
+          currentState.tokens.deviceId === deviceId;
+
+        if (!currentState.isAuthenticated || !tokensUnchanged) {
+          return;
+        }
+
+        await setTokens({
           accessToken: response.accessToken,
           refreshToken: response.refreshToken ?? refreshToken,
           deviceId: response.deviceId ?? deviceId,

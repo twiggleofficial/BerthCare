@@ -26,6 +26,11 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+# testing artifacts
+coverage/
+.nyc_output/
+.eslintcache
+
 # macOS
 .DS_Store
 

@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
+import { loadTokensFromSecureStore } from './token-storage';
 import { createAppSlice } from './slices/app-slice';
 import { createAuthSlice } from './slices/auth-slice';
 import { createNetworkSlice } from './slices/network-slice';
@@ -21,10 +22,11 @@ const createStoreSlices: AppStateCreator<AppState> = (set, get, store) => ({
   ...createSecuritySlice(set, get, store),
 });
 
-type PersistedAppState = Omit<AppState, 'lastSyncTime' | 'lastUnlockedAt'> & {
+type HydratableAppState = Omit<AppState, 'lastSyncTime' | 'lastUnlockedAt'> & {
   lastSyncTime: Date | string | null;
   lastUnlockedAt: Date | string | null;
 };
+type PersistedAppState = Omit<HydratableAppState, 'tokens'>;
 
 const ensureDate = (value: Date | string | null): Date | null => {
   if (!value) {
@@ -34,7 +36,7 @@ const ensureDate = (value: Date | string | null): Date | null => {
   return value instanceof Date ? value : new Date(value);
 };
 
-const normalizeState = (state: PersistedAppState): AppState => ({
+const normalizeState = (state: HydratableAppState): AppState => ({
   ...state,
   lastSyncTime: ensureDate(state.lastSyncTime),
   lastUnlockedAt: ensureDate(state.lastUnlockedAt),
@@ -42,19 +44,26 @@ const normalizeState = (state: PersistedAppState): AppState => ({
 
 export const useAppStore = create<AppState>()(
   devtools(
-    persist(createStoreSlices, {
+    persist<AppState, [], [], PersistedAppState>(createStoreSlices, {
       name: 'berthcare-app-store',
       version: 1,
-      storage: createJSONStorage<AppState>(() => AsyncStorage),
+      storage: createJSONStorage<PersistedAppState>(() => AsyncStorage),
+      partialize: (state) => {
+        const { tokens: _tokens, ...rest } = state;
+        void _tokens;
+        return rest as PersistedAppState;
+      },
       merge: (persistedState, currentState) => {
         if (!persistedState) {
           return currentState;
         }
 
-        return normalizeState({
+        const hydratedState: HydratableAppState = {
           ...currentState,
           ...(persistedState as PersistedAppState),
-        });
+        };
+
+        return normalizeState(hydratedState);
       },
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -66,6 +75,16 @@ export const useAppStore = create<AppState>()(
     { name: 'berthcare-app-store' },
   ),
 );
+
+const hydrateSecureTokens = async () => {
+  const tokens = await loadTokensFromSecureStore();
+  useAppStore.setState({
+    tokens,
+    isAuthenticated: Boolean(tokens.accessToken),
+  });
+};
+
+void hydrateSecureTokens();
 
 export const authSelectors = {
   user: (state: AppState) => state.user,

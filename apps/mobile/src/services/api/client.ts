@@ -7,6 +7,7 @@ import type {
 import axios from 'axios';
 
 import { useAppStore } from '../../store';
+import { getSecureTokenValue } from '../../store/token-storage';
 
 const API_BASE_URLS = {
   development: 'http://localhost:3000/v1',
@@ -128,9 +129,9 @@ const handleUnauthorized = async () => {
   }
 };
 
-apiClient.interceptors.request.use((config) => {
+apiClient.interceptors.request.use(async (config) => {
   const enrichedConfig = attachMetadata(config as ApiRequestConfig);
-  const token = useAppStore.getState().tokens.accessToken;
+  const token = await getSecureTokenValue('accessToken');
 
   if (token && !enrichedConfig.headers?.Authorization) {
     const headers = enrichedConfig.headers ?? {};

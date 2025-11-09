@@ -600,7 +600,7 @@ Result: Returns to visit, confident team received alert
 
 *Note: This message is sent by a background/out-of-app delivery service, targets family members (not caregivers), and requires no app interaction or caregiver confirmation flow.*
 
-```
+```text
 Context: Family member receives daily SMS at 6 PM
 Action: None required (automatic)
 Feedback: SMS delivered to phone

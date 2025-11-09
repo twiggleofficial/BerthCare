@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
 
 import { APP_VERSION } from '../../config/app';
@@ -6,15 +7,10 @@ import { APP_VERSION } from '../../config/app';
 const STORAGE_KEY = 'berthcare-device-fingerprint';
 let inflightFingerprint: Promise<string> | null = null;
 
-const hashSeed = (input: string) => {
-  let hash = 0;
-
-  for (let index = 0; index < input.length; index += 1) {
-    hash = (hash << 5) - hash + input.charCodeAt(index);
-    hash |= 0;
-  }
-
-  return Math.abs(hash).toString(16).padStart(16, '0');
+const bytesToHex = (bytes: Uint8Array) => {
+  return Array.from(bytes)
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
 };
 
 const buildDeviceSignature = () => {
@@ -23,10 +19,15 @@ const buildDeviceSignature = () => {
   return signatureParts.join('|');
 };
 
-const createFingerprintValue = () => {
+const createFingerprintValue = async () => {
   const deviceSignature = buildDeviceSignature();
-  const randomSalt = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-  return `bc_${hashSeed(`${deviceSignature}|${randomSalt}`)}`;
+  const randomSaltBytes = await Crypto.getRandomBytesAsync(32);
+  const randomSalt = bytesToHex(randomSaltBytes);
+  const digest = await Crypto.digestStringAsync(
+    Crypto.CryptoDigestAlgorithm.SHA256,
+    `${deviceSignature}|${randomSalt}`,
+  );
+  return `bc_${digest}`;
 };
 
 export const getDeviceFingerprint = async (): Promise<string> => {
@@ -40,7 +41,7 @@ export const getDeviceFingerprint = async (): Promise<string> => {
   }
 
   inflightFingerprint = (async () => {
-    const fingerprint = createFingerprintValue();
+    const fingerprint = await createFingerprintValue();
     await AsyncStorage.setItem(STORAGE_KEY, fingerprint);
     return fingerprint;
   })();

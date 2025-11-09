@@ -141,12 +141,16 @@ export const ActivationScreen = ({
 
   const activationMutation = useMutation({
     mutationFn: requestActivation,
-    onSuccess: (response: ActivationResponse) => {
+    onSuccess: async (response: ActivationResponse) => {
       const startedAt = requestStartRef.current;
       requestStartRef.current = null;
       const durationMs = typeof startedAt === 'number' ? Date.now() - startedAt : undefined;
 
-      setTokens({ activationToken: response.activationToken, accessToken: null, refreshToken: null });
+      await setTokens({
+        activationToken: response.activationToken,
+        accessToken: null,
+        refreshToken: null,
+      });
       setUser(response.user);
       setStatusMessage('Code accepted. Secure your device with a PIN next.');
       setErrorMessage(null);
@@ -346,6 +350,7 @@ export const ActivationScreen = ({
                 value={sanitizedCode}
                 disabled={activationMutation.isPending}
                 hasError={Boolean(errorMessage)}
+                autoFocus={Boolean(initialEmail)}
                 onChange={handleCodeChange}
               />
             </Animated.View>
@@ -411,13 +416,21 @@ type ActivationCodeInputProps = {
   value: string;
   hasError?: boolean;
   disabled?: boolean;
+  autoFocus?: boolean;
   onChange: (value: string) => void;
 };
 
-const ActivationCodeInput = ({ value, hasError, disabled, onChange }: ActivationCodeInputProps) => {
+const ActivationCodeInput = ({
+  value,
+  hasError,
+  disabled,
+  autoFocus = false,
+  onChange,
+}: ActivationCodeInputProps) => {
   const theme = useTheme<BerthcareTheme>();
   const { colors, spacing, typography } = theme.tokens;
   const [isFocused, setIsFocused] = useState(false);
+  const [codeContainerWidth, setCodeContainerWidth] = useState(0);
   const inputRef = useRef<TextInput>(null);
   const digits = useMemo(
     () => value.padEnd(CODE_LENGTH).split('').slice(0, CODE_LENGTH),
@@ -434,6 +447,22 @@ const ActivationCodeInput = ({ value, hasError, disabled, onChange }: Activation
       ? colors.functional.border.focus
       : colors.functional.border.default;
 
+  const digitGap = spacing.scale['2xs'];
+  const hyphenWidth = spacing.scale.sm;
+  const hyphenSpacing = digitGap * 2;
+  const horizontalPadding = spacing.scale.md * 2;
+  const availableWidth = Math.max(
+    codeContainerWidth - horizontalPadding - hyphenWidth - hyphenSpacing - digitGap * (CODE_LENGTH - 2),
+    0,
+  );
+  const digitWidth =
+    codeContainerWidth === 0
+      ? spacing.scale['2xl']
+      : Math.max(
+          spacing.scale.sm,
+          Math.min(availableWidth / CODE_LENGTH, spacing.scale['2xl']),
+        );
+
   const handlePress = () => {
     if (!disabled) {
       inputRef.current?.focus();
@@ -446,24 +475,35 @@ const ActivationCodeInput = ({ value, hasError, disabled, onChange }: Activation
         onPress={handlePress}
         accessibilityLabel="Activation code"
         accessibilityHint="Enter the 8-digit activation code"
+        onLayout={(event) => {
+          setCodeContainerWidth(event.nativeEvent.layout.width);
+        }}
         style={[
           styles.codeContainer,
           {
             borderColor,
-            padding: spacing.scale.md,
+            paddingVertical: spacing.scale.sm,
+            paddingHorizontal: spacing.scale.md,
             backgroundColor: colors.functional.surface.primary,
           },
         ]}
       >
         <View style={styles.codeRow}>
           <View
-            style={[
-              styles.digitGroup,
-              { marginRight: spacing.scale.sm, gap: spacing.scale.xs },
-            ]}
+            style={styles.digitGroup}
           >
             {digitGroups[0].map((digit, index) => (
-              <View key={`digit-0-${index}`} style={[styles.digitBox, { borderColor }]}>
+              <View
+                key={`digit-0-${index}`}
+                style={[
+                  styles.digitBox,
+                  {
+                    borderColor,
+                    width: digitWidth,
+                    marginRight: index < digitGroups[0].length - 1 ? digitGap : 0,
+                  },
+                ]}
+              >
                 <Typography
                   variant="heading"
                   weight={typography.weights.semibold}
@@ -478,19 +518,34 @@ const ActivationCodeInput = ({ value, hasError, disabled, onChange }: Activation
               </View>
             ))}
           </View>
-          <View style={styles.hyphen}>
+          <View
+            style={[
+              styles.hyphen,
+              {
+                width: hyphenWidth,
+                marginHorizontal: digitGap,
+              },
+            ]}
+          >
             <Typography variant="heading" color={colors.functional.text.secondary}>
               -
             </Typography>
           </View>
           <View
-            style={[
-              styles.digitGroup,
-              { marginLeft: spacing.scale.sm, gap: spacing.scale.xs },
-            ]}
+            style={styles.digitGroup}
           >
             {digitGroups[1].map((digit, index) => (
-              <View key={`digit-1-${index}`} style={[styles.digitBox, { borderColor }]}>
+              <View
+                key={`digit-1-${index}`}
+                style={[
+                  styles.digitBox,
+                  {
+                    borderColor,
+                    width: digitWidth,
+                    marginRight: index < digitGroups[1].length - 1 ? digitGap : 0,
+                  },
+                ]}
+              >
                 <Typography
                   variant="heading"
                   weight={typography.weights.semibold}
@@ -514,7 +569,7 @@ const ActivationCodeInput = ({ value, hasError, disabled, onChange }: Activation
         onChangeText={onChange}
         keyboardType="number-pad"
         maxLength={CODE_LENGTH + CODE_INPUT_BUFFER}
-        autoFocus
+        autoFocus={autoFocus}
         textContentType="oneTimeCode"
         importantForAutofill="yes"
         autoCorrect={false}
@@ -561,15 +616,13 @@ const styles = StyleSheet.create({
   codeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   },
   hyphen: {
-    paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   digitBox: {
-    width: 48,
     height: 56,
     borderWidth: 1,
     borderRadius: 12,
@@ -579,6 +632,8 @@ const styles = StyleSheet.create({
   digitGroup: {
     flexDirection: 'row',
     alignItems: 'center',
+    minWidth: 0,
+    flexShrink: 1,
   },
   feedbackStack: {
     gap: 4,

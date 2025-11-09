@@ -1,3 +1,4 @@
+import { clearSecureTokens, persistSecureTokens } from '../token-storage';
 import type { AppStateCreator, AuthSlice, AuthTokens } from '../types';
 
 const createEmptyTokens = (): AuthTokens => ({
@@ -13,9 +14,10 @@ export const createAuthSlice: AppStateCreator<AuthSlice> = (set) => ({
   isAuthenticated: false,
   activationMethod: null,
   setUser: (user) => set({ user }),
-  setTokens: (tokens) =>
+  setTokens: async (tokens) => {
+    let nextTokens: AuthTokens = createEmptyTokens();
     set((state) => {
-      const nextTokens: AuthTokens = {
+      nextTokens = {
         ...state.tokens,
         ...tokens,
       };
@@ -24,9 +26,16 @@ export const createAuthSlice: AppStateCreator<AuthSlice> = (set) => ({
         tokens: nextTokens,
         isAuthenticated: Boolean(nextTokens.accessToken),
       };
-    }),
+    });
+
+    try {
+      await persistSecureTokens(nextTokens);
+    } catch (error) {
+      console.warn('[auth-slice] Failed to persist tokens securely', error);
+    }
+  },
   setActivationMethod: (method) => set({ activationMethod: method }),
-  logout: () => {
+  logout: async () => {
     set({
       user: null,
       tokens: createEmptyTokens(),
@@ -34,6 +43,10 @@ export const createAuthSlice: AppStateCreator<AuthSlice> = (set) => ({
       activationMethod: null,
       lastUnlockedAt: null,
     });
-    return Promise.resolve();
+    try {
+      await clearSecureTokens();
+    } catch (error) {
+      console.warn('[auth-slice] Failed to clear secure tokens', error);
+    }
   },
 });

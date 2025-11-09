@@ -1,4 +1,4 @@
-import type { ReactNode} from 'react';
+import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
@@ -51,16 +51,44 @@ const cardExamples = [
 export default function ComponentPreviewScreen() {
   const theme = useTheme<BerthcareTheme>();
   const { spacing, colors } = theme.tokens;
+  const spacingScale = spacing.scale;
+  const {
+    lg: spacingLg,
+    xl: spacingXl,
+    md: spacingMd,
+    sm: spacingSm,
+    ['2xs']: spacing2xs,
+  } = spacingScale;
+  const surfaceSecondary = colors.functional.surface.secondary;
+  const textSecondaryColor = colors.functional.text.secondary;
   const [notes, setNotes] = useState('Vitals trending steady. Continue hydration coaching.');
   const [bloodPressure, setBloodPressure] = useState('118/78');
 
   const containerStyle = useMemo(
     () => ({
-      padding: spacing.scale.lg,
-      backgroundColor: colors.functional.surface.secondary,
-      gap: spacing.scale.xl,
+      padding: spacingLg,
+      backgroundColor: surfaceSecondary,
+      gap: spacingXl,
     }),
-    [colors.functional.surface.secondary, spacing.scale.lg, spacing.scale.xl],
+    [spacingLg, surfaceSecondary, spacingXl],
+  );
+  const stackStyle = useMemo(
+    () => ({
+      gap: spacingMd,
+    }),
+    [spacingMd],
+  );
+  const typographyGroupStyle = useMemo(
+    () => ({
+      gap: spacingSm,
+    }),
+    [spacingSm],
+  );
+  const typographyRowStyle = useMemo(
+    () => ({
+      gap: spacing2xs,
+    }),
+    [spacing2xs],
   );
 
   return (
@@ -68,7 +96,7 @@ export default function ComponentPreviewScreen() {
       <Typography variant="title">
         Component preview
       </Typography>
-      <Typography color={colors.functional.text.secondary}>
+      <Typography color={textSecondaryColor}>
         This gallery mirrors specs from design-documentation/design-system/components and
         design-documentation/accessibility/wcag-compliance.md so reviewers can
         confirm behavior without wiring real data.
@@ -78,7 +106,7 @@ export default function ComponentPreviewScreen() {
         title="Buttons"
         description="Primary, secondary, destructive, and link states with 56pt touch targets."
       >
-        <View style={styles.stack}>
+        <View style={stackStyle}>
           {buttonVariants.map((props, index) => (
             <DSButton key={`${props.variant}-${index}`} {...props} />
           ))}
@@ -91,7 +119,7 @@ export default function ComponentPreviewScreen() {
         title="Cards"
         description="Visit cards with status rail, offline indicator, and pressed feedback."
       >
-        <View style={styles.stack}>
+        <View style={stackStyle}>
           {cardExamples.map((example) => (
             <DSCard
               key={example.title}
@@ -109,7 +137,7 @@ export default function ComponentPreviewScreen() {
         title="Inputs"
         description="Persistent labels, focus ring, and validation states from forms spec."
       >
-        <View style={styles.stack}>
+        <View style={stackStyle}>
           <DSInput
             label="Visit notes"
             multiline
@@ -138,9 +166,9 @@ export default function ComponentPreviewScreen() {
         title="Typography scale"
         description="Direct pull from typography tokens to keep hierarchy consistent."
       >
-        <View style={styles.typographyGroup}>
+        <View style={typographyGroupStyle}>
           {typographyVariants.map((variant) => (
-            <View style={styles.typographyRow} key={variant}>
+            <View style={typographyRowStyle} key={variant}>
               <Typography variant="small" color={colors.functional.text.secondary}>
                 {variant}
               </Typography>
@@ -180,16 +208,7 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
   },
-  stack: {
-    gap: 16,
-  },
   section: {
     width: '100%',
-  },
-  typographyGroup: {
-    gap: 12,
-  },
-  typographyRow: {
-    gap: 2,
   },
 });

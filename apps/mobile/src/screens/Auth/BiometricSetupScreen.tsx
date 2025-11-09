@@ -36,6 +36,11 @@ type CompletionResponse = Awaited<ReturnType<typeof completeActivation>>;
 
 const sanitizePin = (value: string) => value.replace(/\D/g, '').slice(0, PIN_LENGTH);
 
+type CompletionErrorResult = {
+  message: string;
+  pinViolationMessage?: string;
+};
+
 class BiometricEnrollmentError extends Error {
   constructor(
     message: string,
@@ -170,19 +175,31 @@ export const BiometricSetupScreen = ({ onEnrollmentComplete }: BiometricSetupScr
     return isValid;
   }, [confirmedPin, pin]);
 
-  const handleCompletionError = useCallback((error: AxiosError<ApiErrorPayload>) => {
-    const errorCode = error.response?.data?.error?.code ?? 'AUTH_ACTIVATION_FAILED';
-    const fallback = error.response?.data?.error?.message;
+  const handleCompletionError = useCallback(
+    (error: AxiosError<ApiErrorPayload>): CompletionErrorResult => {
+      const errorCode = error.response?.data?.error?.code ?? 'AUTH_ACTIVATION_FAILED';
+      const fallback = error.response?.data?.error?.message;
 
-    switch (errorCode) {
-      case 'AUTH_INVALID_ACTIVATION_TOKEN':
-        return 'This activation token expired. Restart activation to continue.';
-      case 'AUTH_PIN_POLICY_VIOLATION':
-        return 'That PIN is not secure enough. Try something less predictable.';
-      default:
-        return fallback ?? 'We could not finish securing your device.';
-    }
-  }, []);
+      switch (errorCode) {
+        case 'AUTH_INVALID_ACTIVATION_TOKEN':
+          return {
+            message: 'This activation token expired. Restart activation to continue.',
+          };
+        case 'AUTH_PIN_POLICY_VIOLATION': {
+          const pinViolationMessage = 'That PIN is not secure enough. Try something less predictable.';
+          return {
+            message: pinViolationMessage,
+            pinViolationMessage,
+          };
+        }
+        default:
+          return {
+            message: fallback ?? 'We could not finish securing your device.',
+          };
+      }
+    },
+    [],
+  );
 
   const validateAndPrepare = useCallback(() => {
     if (!activationToken) {
@@ -233,10 +250,9 @@ export const BiometricSetupScreen = ({ onEnrollmentComplete }: BiometricSetupScr
     [completionMutation],
   );
 
-  const persistEnrollment = useCallback(
-    async (response: CompletionResponse, pinValue: string, supportsBiometric: boolean) => {
-      await saveOfflinePin(pinValue);
-      setTokens({
+  const finalizeEnrollment = useCallback(
+    async (response: CompletionResponse, supportsBiometric: boolean) => {
+      await setTokens({
         activationToken: null,
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
@@ -277,10 +293,23 @@ export const BiometricSetupScreen = ({ onEnrollmentComplete }: BiometricSetupScr
     });
 
     try {
+      await saveOfflinePin(pin);
+    } catch (error) {
+      console.error('Failed to save offline PIN', error);
+      setStatusMessage(null);
+      setErrorMessage('We could not securely store your PIN. Please try again.');
+      void trackAnalyticsEvent({
+        name: 'biometric_offline_pin_persist_error',
+        properties: { supportsBiometric },
+      });
+      return;
+    }
+
+    try {
       const deviceName = getDeviceName();
       const response = await callCompletionApi(token, pin, deviceName, supportsBiometric);
 
-      await persistEnrollment(response, pin, supportsBiometric);
+      await finalizeEnrollment(response, supportsBiometric);
 
       void trackAnalyticsEvent({
         name: 'biometric_enrollment_success',
@@ -290,8 +319,11 @@ export const BiometricSetupScreen = ({ onEnrollmentComplete }: BiometricSetupScr
       onEnrollmentComplete?.();
     } catch (error) {
       const axiosError = error as AxiosError<ApiErrorPayload>;
-      const message = handleCompletionError(axiosError);
+      const { message, pinViolationMessage } = handleCompletionError(axiosError);
       setErrorMessage(message);
+      if (pinViolationMessage) {
+        setPinError(pinViolationMessage);
+      }
       void trackAnalyticsEvent({
         name: 'biometric_enrollment_error',
         properties: {
@@ -305,11 +337,12 @@ export const BiometricSetupScreen = ({ onEnrollmentComplete }: BiometricSetupScr
   }, [
     biometricLabel,
     callCompletionApi,
+    finalizeEnrollment,
     handleBiometricEnrollment,
     handleCompletionError,
     onEnrollmentComplete,
-    persistEnrollment,
     pin,
+    setPinError,
     validateAndPrepare,
   ]);
 

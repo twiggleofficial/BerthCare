@@ -14,7 +14,7 @@ export const getDeviceName = (): string => {
 
   if (Device.deviceName) {
     cachedName = Device.deviceName;
-    return Device.deviceName;
+    return cachedName;
   }
 
   const fallback = buildFallbackName();

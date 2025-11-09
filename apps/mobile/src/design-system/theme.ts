@@ -7,8 +7,25 @@ import { spacing, type SpacingTokens } from './tokens/spacing';
 import { typography, type TypographyTokens } from './tokens/typography';
 
 type ScaleKey = keyof typeof typography.scale;
+type AllowedFontWeight =
+  | 'normal'
+  | 'bold'
+  | '100'
+  | '200'
+  | '300'
+  | '400'
+  | '500'
+  | '600'
+  | '700'
+  | '800'
+  | '900';
 type FontWeightValue =
-  TypographyTokens['weights'][keyof TypographyTokens['weights']];
+  | TypographyTokens['weights'][keyof TypographyTokens['weights']]
+  | AllowedFontWeight;
+
+const toFontWeight = (value: FontWeightValue): AllowedFontWeight => {
+  return typeof value === 'number' ? (`${value}` as AllowedFontWeight) : value;
+};
 
 const createFont = (key: ScaleKey, fontWeight?: FontWeightValue) => {
   const {
@@ -19,7 +36,7 @@ const createFont = (key: ScaleKey, fontWeight?: FontWeightValue) => {
   } = typography.scale[key];
   return {
     fontFamily: typography.fontFamily.base,
-    fontWeight: (fontWeight ?? weight),
+    fontWeight: toFontWeight(fontWeight ?? weight),
     fontSize,
     lineHeight,
     letterSpacing,

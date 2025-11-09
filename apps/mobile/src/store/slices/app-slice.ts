@@ -5,7 +5,7 @@ export const createAppSlice: AppStateCreator<CoreAppSlice> = (set, get) => ({
   setCurrentVisit: (visit) => {
     const { currentVisit } = get();
     const isSameReference = currentVisit === visit;
-    const isSameVisit = Boolean(currentVisit && visit && currentVisit.id === visit.id);
+    const isSameVisit = currentVisit && visit && currentVisit.id === visit.id;
 
     if (isSameReference || isSameVisit) {
       return;

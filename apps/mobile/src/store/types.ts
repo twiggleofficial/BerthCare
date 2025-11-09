@@ -20,12 +20,15 @@ export type UserProfile = {
   phone?: string;
   avatarUrl?: string;
   zoneId?: string | null;
+  shiftPreference?: string | null;
 };
 
 export type VisitContext = {
   id: string;
   clientName: string;
+  /** ISO 8601 date-time string representing the scheduled start. */
   scheduledStart: string;
+  /** ISO 8601 date-time string representing the scheduled end. */
   scheduledEnd: string;
   location?: string;
   carePlanId?: string;
@@ -37,7 +40,7 @@ export interface AuthSlice {
   isAuthenticated: boolean;
   activationMethod: ActivationMethod | null;
   setUser: (user: UserProfile | null) => void;
-  setTokens: (tokens: Partial<AuthTokens>) => void;
+  setTokens: (tokens: Partial<AuthTokens>) => Promise<void>;
   setActivationMethod: (method: ActivationMethod | null) => void;
   logout: () => Promise<void>;
 }

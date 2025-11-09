@@ -5,14 +5,14 @@
 
 ## Persistence & security
 
-- Storage layer: `zustand`’s `persist` middleware + `AsyncStorage` JSON driver (see `apps/mobile/src/store/index.ts`). All slices inside `useAppStore` are persisted under the `berthcare-app-store` key and rehydrated on launch.
+- Storage layer: `zustand`’s `persist` middleware + `AsyncStorage` JSON driver (see `apps/mobile/src/store/index.ts`). All slices inside `useAppStore` are persisted under the `berthcare-app-store` key and rehydrated on launch, except for auth tokens which now live in `expo-secure-store`.
 - Persisted slices today:  
   - **Auth:** `user`, `tokens`, `isAuthenticated`, `activationMethod` (`apps/mobile/src/store/slices/auth-slice.ts`).  
   - **Sync:** `syncStatus`, `lastSyncTime`, `pendingChanges` (`slices/sync-slice.ts`).  
   - **Network:** `isOnline` (`slices/network-slice.ts`).  
   - **App:** `currentVisit` (`slices/app-slice.ts`).  
   - **Security:** `lastUnlockedAt` timestamps used by the PIN/Biometric flows (`slices/security-slice.ts`).
-- Token handling: `accessToken`, `refreshToken`, `activationToken`, and `deviceId` are stored as plain JSON inside `AsyncStorage`. They inherit the OS sandbox protections but are **not encrypted at rest**. Tokens are refreshed via `apps/mobile/src/services/auth/session.ts` and cleared on logout (`logout()` in `auth-slice` resets the slice, nulls `lastUnlockedAt`, and immediately commits the wipe to storage). Retention lasts only until logout, a device wipe, or store version bump; tokens also expire server-side per backend TTLs.
+- Token handling: `accessToken`, `refreshToken`, `activationToken`, and `deviceId` are encrypted with `expo-secure-store` (see `apps/mobile/src/store/token-storage.ts`). The auth slice syncs every update to SecureStore and a migration runs on startup to move any legacy AsyncStorage tokens. Tokens are cleared via SecureStore on logout and never persisted inside the JSON store snapshot.
 - Sensitive-data guidance: any secret that must be encrypted (offline PIN hashes, biometric fallbacks, etc.) should use `expo-secure-store`/Keychain/Keystore rather than this store. Example: `apps/mobile/src/services/auth/offline-pin.ts` derives salted hashes and persists them via `SecureStore`.
 - Rehydration: `store/index.ts` normalizes persisted dates through `ensureDate` during `merge` and `onRehydrateStorage`, ensuring subscribers receive `Date` objects after hydration even if AsyncStorage stored strings.
 - Opting a slice out: wrap the slice in a separate Zustand store or use `persist`’s `partialize`/`skipHydration` hooks inside `store/index.ts` to omit keys (e.g., `partialize: ({ tokens, ...rest }) => rest`). Keep extremely transient UI state outside `useAppStore` to avoid persistence altogether.

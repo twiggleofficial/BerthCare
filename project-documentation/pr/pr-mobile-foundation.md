@@ -18,17 +18,17 @@ Bootstrap the mobile surface so caregivers land inside a cohesive, obvious exper
 - Use this route for visual review or quick regressions without wiring backend data.
 
 ## Linked Tasks
-- [ ] [M1 – Initialize React Native app with Expo](project-documentation/task-plan.md#L62)
-- [ ] [M2 – Set up design system tokens](project-documentation/task-plan.md#L63)
-- [ ] [M3 – Implement core UI components](project-documentation/task-plan.md#L64)
-- [ ] [M4 – Set up navigation structure](project-documentation/task-plan.md#L65)
-- [ ] [M5 – Implement global state management](project-documentation/task-plan.md#L66)
-- [ ] [M6 – Implement API client](project-documentation/task-plan.md#L67)
-- [ ] [M7 – Implement activation experience](project-documentation/task-plan.md#L68)
-- [ ] [M8 – Implement biometric + PIN enrollment](project-documentation/task-plan.md#L69)
-- [ ] [M9 – Implement protected route wrapper](project-documentation/task-plan.md#L70)
-- [ ] [M10 – Implement offline detection](project-documentation/task-plan.md#L71)
-- [ ] [M11 – Add app launch performance optimization](project-documentation/task-plan.md#L72)
+- [ ] [M1 – Initialize React Native app with Expo](project-documentation/task-plan.md#task-m1)
+- [ ] [M2 – Set up design system tokens](project-documentation/task-plan.md#task-m2)
+- [ ] [M3 – Implement core UI components](project-documentation/task-plan.md#task-m3)
+- [ ] [M4 – Set up navigation structure](project-documentation/task-plan.md#task-m4)
+- [ ] [M5 – Implement global state management](project-documentation/task-plan.md#task-m5)
+- [ ] [M6 – Implement API client](project-documentation/task-plan.md#task-m6)
+- [ ] [M7 – Implement activation experience](project-documentation/task-plan.md#task-m7)
+- [ ] [M8 – Implement biometric + PIN enrollment](project-documentation/task-plan.md#task-m8)
+- [ ] [M9 – Implement protected route wrapper](project-documentation/task-plan.md#task-m9)
+- [ ] [M10 – Implement offline detection](project-documentation/task-plan.md#task-m10)
+- [ ] [M11 – Add app launch performance optimization](project-documentation/task-plan.md#task-m11)
 
 ## Testing & Verification (to complete before moving PR out of draft)
 - [ ] `pnpm --filter apps/mobile lint`

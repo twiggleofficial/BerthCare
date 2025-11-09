@@ -6,39 +6,46 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "type-check": "tsc --noEmit",
+    "lint": "pnpm --workspace-root exec eslint \"apps/mobile/src/**/*.{ts,tsx}\"",
+    "test": "pnpm --workspace-root exec vitest run --dir apps/mobile"
   },
   "dependencies": {
-    "@expo/vector-icons": "^15.0.3",
-    "@react-native-async-storage/async-storage": "^2.2.0",
-    "@react-native-community/netinfo": "^11.4.1",
-    "@react-navigation/bottom-tabs": "^7.1.23",
-    "@react-navigation/native": "^7.1.19",
-    "@react-navigation/native-stack": "^7.1.23",
-    "@tanstack/react-query": "^5.90.7",
-    "axios": "^1.13.2",
+    "@expo/vector-icons": "~15.0.3",
+    "@react-native-async-storage/async-storage": "~2.2.0",
+    "@react-native-community/netinfo": "~11.4.1",
+    "@react-navigation/bottom-tabs": "^7.0.0",
+    "@react-navigation/native": "^7.0.0",
+    "@react-navigation/native-stack": "^7.0.0",
+    "@tanstack/react-query": "~5.90.7",
+    "axios": "~1.13.2",
     "expo": "~54.0.23",
     "expo-crypto": "~15.0.7",
     "expo-device": "~8.0.9",
-    "expo-linking": "^8.0.8",
+    "expo-linking": "~8.0.8",
     "expo-local-authentication": "~17.0.7",
-    "expo-router": "^6.0.14",
+    "expo-router": "~6.0.14",
     "expo-secure-store": "~15.0.7",
     "expo-status-bar": "~3.0.8",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
-    "react-native-paper": "^5.14.5",
-    "react-native-safe-area-context": "^5.6.2",
+    "react-native-paper": "~5.14.5",
+    "react-native-safe-area-context": "~5.6.2",
     "react-native-screens": "~4.16.0",
-    "react-native-vector-icons": "^10.3.0",
+    "react-native-vector-icons": "~10.3.0",
     "react-native-web": "~0.21.2",
-    "zustand": "^5.0.8"
+    "zustand": "~5.0.8"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
     "typescript": "~5.9.2"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
   },
   "private": true
 }

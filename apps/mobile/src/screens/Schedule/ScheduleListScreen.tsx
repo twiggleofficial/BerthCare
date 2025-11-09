@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { colors as tokenColors } from '../../design-system/tokens/colors';
 import type { ScheduleStackScreenProps } from '../../navigation/types';
 import { useCarePlanStore } from '../../state/care-plan-store';
+import { QUERY_STALE_TIMES } from '../../services/api/query-client';
 
 const fetchCareTip = async () => {
   await new Promise((resolve) => setTimeout(resolve, 450));
@@ -31,6 +32,7 @@ export function ScheduleListScreen({ navigation }: ScheduleListProps) {
   const { data: careTip, isPending } = useQuery({
     queryKey: ['care-tip'],
     queryFn: fetchCareTip,
+    staleTime: QUERY_STALE_TIMES.stableCareData,
   });
 
   const completion = useMemo(() => {

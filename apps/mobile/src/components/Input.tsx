@@ -45,6 +45,7 @@ export const Input = forwardRef<TextInput, InputProps>(function InputField(
   const [isFocused, setIsFocused] = useState(false);
 
   const stateStyles = resolveStateStyles(colors, validationState, isFocused);
+  const isMultiline = Boolean(rest.multiline);
 
   return (
     <View style={containerStyle}>
@@ -85,7 +86,8 @@ export const Input = forwardRef<TextInput, InputProps>(function InputField(
             {
               fontFamily: typography.fontFamily.base,
               fontSize: typography.scale.body.fontSize,
-              lineHeight: typography.scale.body.lineHeight,
+              lineHeight: isMultiline ? typography.scale.body.lineHeight : undefined,
+              textAlignVertical: isMultiline ? 'top' : 'center',
               color: colors.functional.text.primary,
             },
             inputStyle,

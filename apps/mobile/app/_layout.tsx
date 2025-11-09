@@ -23,7 +23,7 @@ export default function RootLayout() {
   const [isAppReady] = useState(true);
   const hasHiddenSplashScreen = useRef(false);
 
-  const paperTheme = useMemo<BerthcareTheme>(() => berthcareTheme, []);
+  const paperTheme: BerthcareTheme = berthcareTheme;
   const navigationTheme = useMemo<NavigationTheme>(
     () => ({
       ...NavigationDefaultTheme,
