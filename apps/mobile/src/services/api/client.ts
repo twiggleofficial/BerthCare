@@ -70,7 +70,7 @@ if (initialAccessToken) {
   hasCheckedSecureStoreForAccessToken = true;
 }
 
-useAppStore.subscribe((state, prevState) => {
+const unsubscribeAccessTokenSubscription = useAppStore.subscribe((state, prevState) => {
   if (state.tokens.accessToken === prevState.tokens.accessToken) {
     return;
   }
@@ -78,6 +78,22 @@ useAppStore.subscribe((state, prevState) => {
   cachedAccessToken = state.tokens.accessToken;
   hasCheckedSecureStoreForAccessToken = true;
 });
+
+const cleanupAccessTokenSubscription = () => {
+  unsubscribeAccessTokenSubscription();
+};
+
+if (typeof module !== 'undefined') {
+  type HotModule = typeof module & {
+    hot?: {
+      dispose(callback: () => void): void;
+    };
+  };
+
+  (module as HotModule).hot?.dispose(() => {
+    cleanupAccessTokenSubscription();
+  });
+}
 
 const readAccessTokenFromSecureStore = async (): Promise<string | null> => {
   try {

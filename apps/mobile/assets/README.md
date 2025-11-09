@@ -16,7 +16,7 @@ You need to create the following image files:
 Until you have the actual images, you can either:
 
 1. Create simple placeholder images using any image editor
-2. Use online tools like https://www.figma.com or https://www.canva.com
+2. Use online tools like [Figma](https://www.figma.com) or [Canva](https://www.canva.com)
 3. Either remove the icon entries from `app.json` or point them to valid placeholder image paths (a single shared placeholder is fine). Remember to restore the real asset paths before publishing.
 
 ## Colors

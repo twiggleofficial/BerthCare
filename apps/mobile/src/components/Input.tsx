@@ -45,7 +45,9 @@ export const Input = forwardRef<TextInput, InputProps>(function InputField(
   const [isFocused, setIsFocused] = useState(false);
   const { onFocus: propsOnFocus, onBlur: propsOnBlur, ...inputProps } = rest;
 
-  const stateStyles = resolveStateStyles(colors, validationState, isFocused);
+  const isDisabled = inputProps.editable === false;
+  const stateStyles = resolveStateStyles(colors, validationState, isFocused, isDisabled);
+  const { textColor, placeholderColor, ...inputWrapperStyles } = stateStyles;
   const isMultiline = Boolean(inputProps.multiline);
 
   return (
@@ -67,21 +69,14 @@ export const Input = forwardRef<TextInput, InputProps>(function InputField(
             borderRadius: 8,
             paddingHorizontal: 16,
             paddingVertical: spacing.scale.md,
-            borderColor: stateStyles.borderColor,
-            borderWidth: stateStyles.borderWidth,
-            backgroundColor: colors.functional.surface.primary,
-            shadowColor: stateStyles.shadowColor,
-            shadowOpacity: stateStyles.shadowOpacity,
-            shadowOffset: stateStyles.shadowOffset,
-            shadowRadius: stateStyles.shadowRadius,
-            elevation: stateStyles.elevation,
           },
+          inputWrapperStyles,
         ]}
       >
         <TextInput
           ref={ref}
           accessibilityLabel={accessibilityLabel ?? label}
-          placeholderTextColor={colors.functional.text.tertiary}
+          placeholderTextColor={placeholderColor}
           style={[
             styles.input,
             {
@@ -89,7 +84,7 @@ export const Input = forwardRef<TextInput, InputProps>(function InputField(
               fontSize: typography.scale.body.fontSize,
               lineHeight: isMultiline ? typography.scale.body.lineHeight : undefined,
               textAlignVertical: isMultiline ? 'top' : 'center',
-              color: colors.functional.text.primary,
+              color: textColor,
             },
             inputStyle,
           ]}
@@ -138,20 +133,42 @@ const resolveStateStyles = (
   colors: BerthcareTheme['tokens']['colors'],
   validationState: ValidationState,
   isFocused: boolean,
-): ViewStyle & {
+  isDisabled: boolean,
+): (ViewStyle & {
   borderColor: string;
   borderWidth: number;
   elevation: number;
-} => {
+  backgroundColor: string;
+  textColor: string;
+  placeholderColor: string;
+}) => {
+  if (isDisabled) {
+    return {
+      borderColor: colors.functional.border.disabled,
+      borderWidth: 1,
+      backgroundColor: colors.functional.surface.disabled,
+      shadowColor: 'transparent',
+      shadowOpacity: 0,
+      shadowOffset: { width: 0, height: 0 },
+      shadowRadius: 0,
+      elevation: 0,
+      textColor: colors.functional.text.disabled,
+      placeholderColor: colors.functional.text.disabled,
+    };
+  }
+
   if (validationState === 'error') {
     return {
       borderColor: colors.functional.border.error,
       borderWidth: 2,
+      backgroundColor: colors.functional.surface.primary,
       shadowColor: colors.semantic.urgent[500],
       shadowOpacity: 0.1,
       shadowOffset: { width: 0, height: 0 },
       shadowRadius: 4,
       elevation: 0,
+      textColor: colors.functional.text.primary,
+      placeholderColor: colors.functional.text.tertiary,
     };
   }
 
@@ -159,11 +176,14 @@ const resolveStateStyles = (
     return {
       borderColor: colors.functional.border.success,
       borderWidth: 2,
+      backgroundColor: colors.functional.surface.primary,
       shadowColor: colors.functional.border.success,
       shadowOpacity: 0.12,
       shadowOffset: { width: 0, height: 0 },
       shadowRadius: 6,
       elevation: 0,
+      textColor: colors.functional.text.primary,
+      placeholderColor: colors.functional.text.tertiary,
     };
   }
 
@@ -171,22 +191,28 @@ const resolveStateStyles = (
     return {
       borderColor: colors.functional.border.focus,
       borderWidth: 2,
+      backgroundColor: colors.functional.surface.primary,
       shadowColor: colors.functional.border.focus,
       shadowOpacity: 0.16,
       shadowOffset: { width: 0, height: 0 },
       shadowRadius: 4,
       elevation: 0,
+      textColor: colors.functional.text.primary,
+      placeholderColor: colors.functional.text.tertiary,
     };
   }
 
   return {
     borderColor: colors.functional.border.default,
     borderWidth: 1,
+    backgroundColor: colors.functional.surface.primary,
     shadowColor: 'transparent',
     shadowOpacity: 0,
     shadowOffset: { width: 0, height: 0 },
     shadowRadius: 0,
     elevation: 0,
+    textColor: colors.functional.text.primary,
+    placeholderColor: colors.functional.text.tertiary,
   };
 };
 
