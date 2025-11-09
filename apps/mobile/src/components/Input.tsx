@@ -43,9 +43,10 @@ export const Input = forwardRef<TextInput, InputProps>(function InputField(
   const theme = useTheme<BerthcareTheme>();
   const { colors, spacing, typography } = theme.tokens;
   const [isFocused, setIsFocused] = useState(false);
+  const { onFocus: propsOnFocus, onBlur: propsOnBlur, ...inputProps } = rest;
 
   const stateStyles = resolveStateStyles(colors, validationState, isFocused);
-  const isMultiline = Boolean(rest.multiline);
+  const isMultiline = Boolean(inputProps.multiline);
 
   return (
     <View style={containerStyle}>
@@ -94,13 +95,13 @@ export const Input = forwardRef<TextInput, InputProps>(function InputField(
           ]}
           onFocus={(event) => {
             setIsFocused(true);
-            rest.onFocus?.(event);
+            propsOnFocus?.(event);
           }}
           onBlur={(event) => {
             setIsFocused(false);
-            rest.onBlur?.(event);
+            propsOnBlur?.(event);
           }}
-          {...rest}
+          {...inputProps}
         />
       </View>
 

@@ -17,7 +17,7 @@ Until you have the actual images, you can either:
 
 1. Create simple placeholder images using any image editor
 2. Use online tools like https://www.figma.com or https://www.canva.com
-3. Temporarily comment out the icon references in `app.json`
+3. Either remove the icon entries from `app.json` or point them to valid placeholder image paths (a single shared placeholder is fine). Remember to restore the real asset paths before publishing.
 
 ## Colors
 

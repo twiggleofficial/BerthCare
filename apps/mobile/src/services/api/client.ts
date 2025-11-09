@@ -60,6 +60,55 @@ const debugLog = (...args: unknown[]) => {
   }
 };
 
+let cachedAccessToken: string | null = null;
+let hasCheckedSecureStoreForAccessToken = false;
+let pendingAccessTokenFetch: Promise<string | null> | null = null;
+
+const initialAccessToken = useAppStore.getState().tokens.accessToken;
+if (initialAccessToken) {
+  cachedAccessToken = initialAccessToken;
+  hasCheckedSecureStoreForAccessToken = true;
+}
+
+useAppStore.subscribe((state, prevState) => {
+  if (state.tokens.accessToken === prevState.tokens.accessToken) {
+    return;
+  }
+
+  cachedAccessToken = state.tokens.accessToken;
+  hasCheckedSecureStoreForAccessToken = true;
+});
+
+const readAccessTokenFromSecureStore = async (): Promise<string | null> => {
+  try {
+    const token = await getSecureTokenValue('accessToken');
+    cachedAccessToken = token;
+    return token;
+  } finally {
+    hasCheckedSecureStoreForAccessToken = true;
+    pendingAccessTokenFetch = null;
+  }
+};
+
+const getAccessToken = async (): Promise<string | null> => {
+  const memoryToken = useAppStore.getState().tokens.accessToken;
+  if (memoryToken) {
+    cachedAccessToken = memoryToken;
+    hasCheckedSecureStoreForAccessToken = true;
+    return memoryToken;
+  }
+
+  if (hasCheckedSecureStoreForAccessToken) {
+    return cachedAccessToken;
+  }
+
+  if (!pendingAccessTokenFetch) {
+    pendingAccessTokenFetch = readAccessTokenFromSecureStore();
+  }
+
+  return pendingAccessTokenFetch;
+};
+
 const attachMetadata = (config: ApiRequestConfig) => {
   config.metadata = { startTime: Date.now() };
   return config;
@@ -131,7 +180,7 @@ const handleUnauthorized = async () => {
 
 apiClient.interceptors.request.use(async (config) => {
   const enrichedConfig = attachMetadata(config as ApiRequestConfig);
-  const token = await getSecureTokenValue('accessToken');
+  const token = await getAccessToken();
 
   if (token && !enrichedConfig.headers?.Authorization) {
     const headers = enrichedConfig.headers ?? {};

@@ -8,34 +8,38 @@ const createEmptyTokens = (): AuthTokens => ({
   deviceId: null,
 });
 
-export const createAuthSlice: AppStateCreator<AuthSlice> = (set) => ({
+export const createAuthSlice: AppStateCreator<AuthSlice> = (set, get) => ({
   user: null,
   tokens: createEmptyTokens(),
   isAuthenticated: false,
   activationMethod: null,
   setUser: (user) => set({ user }),
   setTokens: async (tokens) => {
-    let nextTokens: AuthTokens = createEmptyTokens();
-    set((state) => {
-      nextTokens = {
-        ...state.tokens,
-        ...tokens,
-      };
-
-      return {
-        tokens: nextTokens,
-        isAuthenticated: Boolean(nextTokens.accessToken),
-      };
-    });
+    const nextTokens: AuthTokens = {
+      ...get().tokens,
+      ...tokens,
+    };
 
     try {
       await persistSecureTokens(nextTokens);
     } catch (error) {
       console.warn('[auth-slice] Failed to persist tokens securely', error);
+      throw error;
     }
+
+    set({
+      tokens: nextTokens,
+      isAuthenticated: Boolean(nextTokens.accessToken),
+    });
   },
   setActivationMethod: (method) => set({ activationMethod: method }),
   logout: async () => {
+    try {
+      await clearSecureTokens();
+    } catch (error) {
+      console.warn('[auth-slice] Failed to clear secure tokens', error);
+      throw error;
+    }
     set({
       user: null,
       tokens: createEmptyTokens(),
@@ -43,10 +47,5 @@ export const createAuthSlice: AppStateCreator<AuthSlice> = (set) => ({
       activationMethod: null,
       lastUnlockedAt: null,
     });
-    try {
-      await clearSecureTokens();
-    } catch (error) {
-      console.warn('[auth-slice] Failed to clear secure tokens', error);
-    }
   },
 });

@@ -45,8 +45,12 @@ export default function RootLayout() {
     }
 
     hasHiddenSplashScreen.current = true;
-    await SplashScreen.hideAsync();
-    await recordAppLaunchReady();
+    try {
+      await SplashScreen.hideAsync();
+      await recordAppLaunchReady();
+    } catch (error) {
+      console.warn('[RootLayout] Failed to finalize app launch', error);
+    }
   }, [isAppReady]);
 
   return (

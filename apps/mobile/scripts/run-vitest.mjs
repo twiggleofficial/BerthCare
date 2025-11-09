@@ -9,10 +9,26 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const mobileRoot = path.resolve(scriptDir, '..');
 const backendPackage = new URL('../../backend/package.json', import.meta.url);
 const requireFromBackend = createRequire(backendPackage);
-const vitestBin = requireFromBackend.resolve('vitest/vitest.mjs');
+let vitestBin;
+try {
+  vitestBin = requireFromBackend.resolve('vitest/vitest.mjs');
+} catch (error) {
+  console.error(
+    '[run-vitest] Failed to resolve vitest from backend package. Ensure backend dependencies are installed.',
+  );
+  console.error(error);
+  process.exit(1);
+}
 
 const cliArgs = process.argv.slice(2);
-const vitestArgs = ['run', '--root', mobileRoot, '--dir', mobileRoot, '--passWithNoTests'];
+const vitestArgs = [
+  'run',
+  '--root',
+  mobileRoot,
+  '--dir',
+  mobileRoot,
+  '--passWithNoTests', // Allow empty suites during bootstrap; revisit once coverage grows.
+];
 let runInBand = false;
 
 for (const arg of cliArgs) {
@@ -46,8 +62,11 @@ child.on('exit', (code, signal) => {
   }
 
   if (signal) {
+    // Child terminated via signal; propagate it asynchronously then stop.
     process.kill(process.pid, signal);
-  } else {
-    process.exit(1);
+    return;
   }
+
+  // Neither exit code nor signal was provided; treat as failure.
+  process.exit(1);
 });
