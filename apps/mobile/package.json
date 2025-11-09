@@ -9,7 +9,7 @@
     "web": "expo start --web",
     "type-check": "tsc --noEmit",
     "lint": "pnpm --workspace-root exec eslint \"apps/mobile/src/**/*.{ts,tsx}\"",
-    "test": "pnpm --workspace-root exec vitest run --dir apps/mobile"
+    "test": "node ./scripts/run-vitest.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "~15.0.3",
