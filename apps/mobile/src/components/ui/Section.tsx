@@ -16,6 +16,8 @@ export const Section = ({ title, children }: SectionProps) => {
 
   return (
     <View
+      accessibilityRole="summary"
+      accessibilityLabel={title}
       style={[
         styles.section,
         {
@@ -26,10 +28,14 @@ export const Section = ({ title, children }: SectionProps) => {
         },
       ]}
     >
-      <Typography variant="heading" weight={typography.weights.semibold}>
+      <Typography
+        variant="heading"
+        weight={typography.weights.semibold}
+        accessibilityRole="header"
+      >
         {title}
       </Typography>
-      <View>{children}</View>
+      {children}
     </View>
   );
 };

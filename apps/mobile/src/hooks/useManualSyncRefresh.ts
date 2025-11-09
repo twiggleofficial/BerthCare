@@ -7,6 +7,7 @@ const logger = createLogger('manual-sync-refresh');
 
 export function useManualSyncRefresh() {
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
   const isRefreshingRef = useRef(false);
   const mountedRef = useRef(true);
 
@@ -23,10 +24,14 @@ export function useManualSyncRefresh() {
 
     isRefreshingRef.current = true;
     setRefreshing(true);
+    setError(null);
 
     void triggerForegroundSync('manual')
       .catch((error) => {
         logger.error('Manual sync refresh failed', { error });
+        if (mountedRef.current) {
+          setError(error as Error);
+        }
       })
       .finally(() => {
         isRefreshingRef.current = false;
@@ -38,6 +43,7 @@ export function useManualSyncRefresh() {
 
   return {
     refreshing,
+    error,
     onRefresh: handleRefresh,
   };
 }

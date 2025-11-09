@@ -3,7 +3,8 @@ module.exports = function (api) {
   return {
     presets: ['babel-preset-expo'],
     plugins: [
-      '@babel/plugin-transform-class-properties',
+      ['@babel/plugin-proposal-decorators', { legacy: true }],
+      ['@babel/plugin-transform-class-properties', { loose: true }],
       require.resolve('./babel-import-meta-shim'),
     ],
   };

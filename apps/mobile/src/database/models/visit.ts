@@ -95,8 +95,8 @@ export class Visit extends SyncableModel {
 
       if (update.durationMinutes !== undefined) {
         const providedDuration = update.durationMinutes ?? null;
-        if (providedDuration !== null && providedDuration < 0) {
-          Visit.logger.warn('Negative duration provided; marking as invalid', {
+        if (providedDuration !== null && providedDuration <= 0) {
+          Visit.logger.warn('Non-positive duration provided; marking as invalid', {
             visitId: record.id,
             durationMinutes: providedDuration,
           });
