@@ -1993,6 +1993,13 @@ class VisitDocumentation extends Model {
 }
 ```
 
+#### Index Strategy & Telemetry (Feb 2025)
+
+- **Measured before cutting:** We captured `EXPLAIN QUERY PLAN` output for every repository query (see `docs/index-audit.md`) and kept only the indexes that appeared in those plans. Low-selectivity `is_active` indexes and unused `sync_status` indexes were removed because they never influenced the query planner.
+- **Staged rollout:** High-benefit indexes now live in schema version 4. Optional indexes remain defined in code (`OPTIONAL_INDEXES` inside `apps/mobile/src/database/migrations.ts`) so we can re-enable them in a future release once telemetry proves they are needed.
+- **Telemetry guardrails:** Every WatermelonDB write is wrapped with latency telemetry. If write latency spikes after enabling optional indexes, the app can automatically rollback (drop) those indexes on the next launch.
+- **Operational plan:** Monitor the new `database_write_latency` analytics event during the staged rollout. If P95 write latency for inserts/updates/deletes exceeds the 75 ms target, trigger the rollback helper to drop optional indexes and file a follow-up to revisit the query strategy.
+
 ### State Management Architecture
 
 **Global State (Zustand)**
