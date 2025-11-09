@@ -1,13 +1,15 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "composite": true,
-    "outDir": "dist",
-    "rootDir": "src",
-    "jsx": "react-jsx",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "declaration": true
+    "strict": true,
+    "baseUrl": ".",
+    "jsx": "react-jsx"
   },
-  "include": ["src/**/*.{ts,tsx}"],
-  "references": [{ "path": "../../libs/shared" }, { "path": "../../libs/utils" }]
+  "include": [
+    "app",
+    "src",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "index.ts"
+  ]
 }

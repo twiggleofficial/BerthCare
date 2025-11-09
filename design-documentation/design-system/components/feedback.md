@@ -596,15 +596,17 @@ Haptic: Medium impact
 Result: Returns to visit, confident team received alert
 ```
 
-### Scenario 8: Family Portal Update
+### Scenario 8: Family SMS Update
+
+*Note: This message is sent by a background/out-of-app delivery service, targets family members (not caregivers), and requires no app interaction or caregiver confirmation flow.*
 
 ```
-Context: Family member views care updates
-Action: Opens family portal
-Feedback: Standard loading (if needed)
-Content: Shows "Last updated 2 hours ago"
-No status messages: Portal is read-only, no actions to confirm
-Result: Family sees information, no feedback needed
+Context: Family member receives daily SMS at 6 PM
+Action: None required (automatic)
+Feedback: SMS delivered to phone
+Content: "Hi Jennifer, your mom had a great day today..."
+No app feedback: SMS system handles delivery confirmation
+Result: Family receives update, no app interaction needed
 ```
 
 ---

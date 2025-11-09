@@ -521,7 +521,7 @@ Centered: Yes (if screen > 600px)
 
 ```
 Not applicable - mobile app only
-(Family portal uses different card style)
+(Admin/coordinator portal uses data tables, not cards)
 ```
 
 **Why full-width:**
