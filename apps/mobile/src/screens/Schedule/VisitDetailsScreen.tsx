@@ -395,9 +395,17 @@ const vitalSignKeys: VitalSignField[] = [
   'oxygenSaturation',
 ];
 
-const buildVitalSignsPatch = (draft: VitalSignsDraft): Partial<VitalSigns> =>
-  vitalSignKeys.reduce<Partial<VitalSigns>>((acc, key) => {
-    const sanitized = sanitizeNumber(draft[key]);
+type VitalSignPatch = Partial<Record<VitalSignField, number | null>>;
+
+const buildVitalSignsPatch = (draft: VitalSignsDraft): VitalSignPatch =>
+  vitalSignKeys.reduce<VitalSignPatch>((acc, key) => {
+    const raw = draft[key].trim();
+    if (!raw.length) {
+      acc[key] = null;
+      return acc;
+    }
+
+    const sanitized = sanitizeNumber(raw);
     if (sanitized !== null) {
       acc[key] = sanitized;
     }

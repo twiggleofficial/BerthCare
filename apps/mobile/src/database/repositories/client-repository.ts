@@ -148,7 +148,7 @@ export class ClientRepository extends BaseRepository<Client> {
   }
 
   async getPendingSync(): Promise<Client[]> {
-    return this.collection.query(Q.where('sync_status', 'pending')).fetch();
+    return this.collection.query(Q.where('sync_state', 'pending')).fetch();
   }
 
   private toPayload(client: Client): Record<string, unknown> {

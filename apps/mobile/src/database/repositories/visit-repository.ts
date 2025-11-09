@@ -205,7 +205,7 @@ export class VisitRepository extends BaseRepository<Visit> {
   }
 
   async getPendingSync(): Promise<Visit[]> {
-    return this.collection.query(Q.where('sync_status', 'pending')).fetch();
+    return this.collection.query(Q.where('sync_state', 'pending')).fetch();
   }
 
   private normalizeRecentLimit(limitInput: number): number {

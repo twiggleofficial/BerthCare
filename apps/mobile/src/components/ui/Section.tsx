@@ -29,7 +29,7 @@ export const Section = ({ title, children }: SectionProps) => {
       <Typography variant="heading" weight={typography.weights.semibold}>
         {title}
       </Typography>
-      <View style={{ gap: spacing.layout.formFieldGap }}>{children}</View>
+      <View>{children}</View>
     </View>
   );
 };

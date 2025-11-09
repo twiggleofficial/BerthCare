@@ -2,6 +2,9 @@ module.exports = function (api) {
   api.cache(true);
   return {
     presets: ['babel-preset-expo'],
-    plugins: [require.resolve('./babel-import-meta-shim')],
+    plugins: [
+      '@babel/plugin-transform-class-properties',
+      require.resolve('./babel-import-meta-shim'),
+    ],
   };
 };

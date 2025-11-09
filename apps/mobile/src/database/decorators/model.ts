@@ -10,13 +10,13 @@ type ModelConstructor = typeof Model & {
  */
 export const model =
   (tableName: string) =>
-  <T extends ModelConstructor>(constructor: T): T => {
-    Object.defineProperty(constructor, 'table', {
+  <T extends ModelConstructor>(ctor: T): T => {
+    Object.defineProperty(ctor, 'table', {
       configurable: true,
       enumerable: true,
       value: tableName,
       writable: true,
     });
 
-    return constructor;
+    return ctor;
   };

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { createLogger } from '../services/logger';
 import { triggerForegroundSync } from '../services/sync/sync-runner';
@@ -8,6 +8,13 @@ const logger = createLogger('manual-sync-refresh');
 export function useManualSyncRefresh() {
   const [refreshing, setRefreshing] = useState(false);
   const isRefreshingRef = useRef(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const handleRefresh = useCallback(() => {
     if (isRefreshingRef.current) {
@@ -23,7 +30,9 @@ export function useManualSyncRefresh() {
       })
       .finally(() => {
         isRefreshingRef.current = false;
-        setRefreshing(false);
+        if (mountedRef.current) {
+          setRefreshing(false);
+        }
       });
   }, []);
 

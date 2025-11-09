@@ -108,24 +108,25 @@ export class SyncQueue {
   }
 
   async dequeue(): Promise<SyncQueueChange | null> {
-    return withDatabaseWriteTelemetry(
-      {
-        entity: SYNC_QUEUE_TABLE,
-        operation: 'delete',
-        database: this.database,
-        rowsAffected: 1,
-      },
-      () =>
-        this.database.write(async () => {
-          const entry = await this.getNextEntry();
-          if (!entry) {
-            return null;
-          }
+    const telemetryContext = {
+      entity: SYNC_QUEUE_TABLE,
+      operation: 'delete',
+      database: this.database,
+      rowsAffected: 0,
+    };
 
-          const change = this.toChange(entry);
-          await entry.destroyPermanently();
-          return change;
-        }),
+    return withDatabaseWriteTelemetry(telemetryContext, () =>
+      this.database.write(async () => {
+        const entry = await this.getNextEntry();
+        if (!entry) {
+          return null;
+        }
+
+        telemetryContext.rowsAffected = 1;
+        const change = this.toChange(entry);
+        await entry.destroyPermanently();
+        return change;
+      }),
     );
   }
 
@@ -148,24 +149,26 @@ export class SyncQueue {
   }
 
   async clear(): Promise<void> {
-    const entries = await this.collection.query().fetch();
-    if (!entries.length) {
-      return;
-    }
+    const telemetryContext = {
+      entity: SYNC_QUEUE_TABLE,
+      operation: 'bulk',
+      database: this.database,
+      rowsAffected: 0,
+    };
 
-    await withDatabaseWriteTelemetry(
-      {
-        entity: SYNC_QUEUE_TABLE,
-        operation: 'bulk',
-        database: this.database,
-        rowsAffected: entries.length,
-      },
-      () =>
-        this.database.write(async () => {
-          await this.database.batch(
-            ...entries.map((entry) => entry.prepareDestroyPermanently()),
-          );
-        }),
+    await withDatabaseWriteTelemetry(telemetryContext, () =>
+      this.database.write(async () => {
+        const entries = await this.collection.query().fetch();
+        const total = entries.length;
+        telemetryContext.rowsAffected = total;
+        if (!total) {
+          return;
+        }
+
+        await this.database.batch(
+          ...entries.map((entry) => entry.prepareDestroyPermanently()),
+        );
+      }),
     );
   }
 

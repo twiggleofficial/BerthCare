@@ -24,15 +24,12 @@ export function AppHeader({
 }: AppHeaderProps) {
   const theme = useTheme<BerthcareTheme>();
   const label = accessibilityLabel ?? (subtitle ? `${title}. ${subtitle}` : title);
-  const headerAccessible = accessible ?? true;
   const headerRole = accessibilityRole ?? 'header';
+  const containerAccessible = accessible ?? false;
 
   return (
     <View
-      accessible={headerAccessible}
-      accessibilityRole={headerRole}
-      accessibilityLabel={label}
-      accessibilityHint={accessibilityHint}
+      accessible={containerAccessible}
       {...rest}
       style={[
         styles.container,
@@ -41,7 +38,13 @@ export function AppHeader({
       ]}
     >
       <View style={styles.copy}>
-        <Text variant="headlineSmall" style={styles.title} accessibilityRole="text">
+        <Text
+          variant="headlineSmall"
+          style={styles.title}
+          accessibilityRole={headerRole}
+          accessibilityLabel={label}
+          accessibilityHint={accessibilityHint}
+        >
           {title}
         </Text>
         {subtitle ? (

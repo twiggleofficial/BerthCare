@@ -68,8 +68,12 @@ export class Visit extends SyncableModel {
   async recordCheckIn(update: VisitCheckInUpdate): Promise<void> {
     await this.update((record) => {
       record.checkInTime = update.timestamp ?? new Date();
-      record.checkInLatitude = update.latitude ?? null;
-      record.checkInLongitude = update.longitude ?? null;
+      if (update.latitude !== undefined) {
+        record.checkInLatitude = update.latitude;
+      }
+      if (update.longitude !== undefined) {
+        record.checkInLongitude = update.longitude;
+      }
       record.status = 'in_progress';
       this.setSyncState(record, 'pending');
     });
@@ -80,8 +84,12 @@ export class Visit extends SyncableModel {
     await this.update((record) => {
       const timestamp = update.timestamp ?? new Date();
       record.checkOutTime = timestamp;
-      record.checkOutLatitude = update.latitude ?? null;
-      record.checkOutLongitude = update.longitude ?? null;
+      if (update.latitude !== undefined) {
+        record.checkOutLatitude = update.latitude;
+      }
+      if (update.longitude !== undefined) {
+        record.checkOutLongitude = update.longitude;
+      }
       let nextStatus: VisitStatus = 'completed';
       let computedDuration: number | null = null;
 

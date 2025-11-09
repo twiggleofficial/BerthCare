@@ -11,11 +11,11 @@ export type VisitStatus =
   | 'invalid_timing';
 
 export type VitalSigns = {
-  bloodPressureSystolic?: number;
-  bloodPressureDiastolic?: number;
-  heartRate?: number;
-  temperature?: number;
-  oxygenSaturation?: number;
+  bloodPressureSystolic?: number | null;
+  bloodPressureDiastolic?: number | null;
+  heartRate?: number | null;
+  temperature?: number | null;
+  oxygenSaturation?: number | null;
 };
 
 export type VisitActivities = {

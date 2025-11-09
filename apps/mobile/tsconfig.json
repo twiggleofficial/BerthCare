@@ -6,11 +6,7 @@
     "jsx": "react-jsx",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": false,
-    "useDefineForClassFields": false,
-    "paths": {
-      "vitest": ["../backend/node_modules/vitest"],
-      "vitest/*": ["../backend/node_modules/vitest/*"]
-    }
+    "useDefineForClassFields": false
   },
   "include": [
     "app",
