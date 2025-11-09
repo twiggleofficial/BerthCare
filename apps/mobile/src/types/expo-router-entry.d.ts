@@ -1,4 +1,5 @@
 declare module 'expo-router/entry' {
-  const entry: unknown;
+  import type { ComponentType } from 'react';
+  const entry: ComponentType;
   export default entry;
 }

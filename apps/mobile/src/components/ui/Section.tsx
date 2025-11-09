@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { ViewStyle } from 'react-native';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
@@ -8,9 +9,11 @@ import { Typography } from '../Typography';
 export type SectionProps = {
   title: string;
   children: ReactNode;
+  style?: ViewStyle;
+  testID?: string;
 };
 
-export const Section = ({ title, children }: SectionProps) => {
+export const Section = ({ title, children, style, testID }: SectionProps) => {
   const theme = useTheme<BerthcareTheme>();
   const { spacing, colors, typography } = theme.tokens;
 
@@ -18,6 +21,7 @@ export const Section = ({ title, children }: SectionProps) => {
     <View
       accessibilityRole="summary"
       accessibilityLabel={title}
+      testID={testID}
       style={[
         styles.section,
         {
@@ -26,6 +30,7 @@ export const Section = ({ title, children }: SectionProps) => {
           borderColor: colors.functional.border.subtle,
           gap: spacing.layout.formFieldGap,
         },
+        style,
       ]}
     >
       <Typography

@@ -26,9 +26,18 @@ export function useManualSyncRefresh() {
     setRefreshing(true);
     setError(null);
 
-    void triggerForegroundSync('manual')
+    triggerForegroundSync('manual')
+      .then((outcome) => {
+        if (outcome === 'error' || outcome === 'offline') {
+          logger.warn('Manual sync finished without success', { outcome });
+          if (mountedRef.current) {
+            setError(new Error(`Sync ${outcome}`));
+          }
+        }
+      })
       .catch((error) => {
-        logger.error('Manual sync refresh failed', { error });
+        // Defensive: triggerForegroundSync should not reject, but capture unexpected failures.
+        logger.error('Unexpected manual sync failure', { error });
         if (mountedRef.current) {
           setError(error as Error);
         }

@@ -43,7 +43,7 @@ export class Visit extends SyncableModel {
   @field('status') status!: VisitStatus;
   @field('copied_from_visit_id') copiedFromVisitId?: string | null;
   @field('is_active') isActive!: boolean;
-  @field('local_id') localId!: string;
+  @field('local_id') localId!: string; // Client-generated ID for optimistic inserts; WatermelonDB id stays internal
   @field('sync_status') syncState!: SyncStatus;
   @date('created_at') createdAt!: Date;
   @date('updated_at') updatedAt!: Date;
@@ -101,7 +101,7 @@ export class Visit extends SyncableModel {
             durationMinutes: providedDuration,
           });
           computedDuration = null;
-          nextStatus = 'invalid_timing' as VisitStatus;
+          nextStatus = 'invalid_timing';
         } else {
           computedDuration = providedDuration;
         }
@@ -114,7 +114,7 @@ export class Visit extends SyncableModel {
             checkOut: timestamp.toISOString(),
           });
           computedDuration = null;
-          nextStatus = 'invalid_timing' as VisitStatus;
+          nextStatus = 'invalid_timing';
         } else {
           computedDuration = diffMinutes;
         }
@@ -123,7 +123,7 @@ export class Visit extends SyncableModel {
           visitId: record.id,
           checkOut: timestamp.toISOString(),
         });
-        nextStatus = 'invalid_timing' as VisitStatus;
+        nextStatus = 'invalid_timing';
       }
 
       record.durationMinutes = computedDuration ?? null;
