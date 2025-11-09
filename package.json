@@ -25,8 +25,9 @@
     "typescript": "^5.4.5"
   },
   "pnpm": {
-    "// overrides rationale (security + tooling constraints)": "semver>=7.6.0 pulls in the regex-DoS fix flagged by npm audit runs, send>=0.19.0 keeps the Express stack on the patched template-injection/XSS issue via SendStream.redirect (CVE-2024-43799), and @react-native-community/cli@20.0.2 ensures metro tooling stays in lockstep with apps/mobile (see docs/architecture.md#repository-layout).",
+    "// overrides rationale (security + tooling constraints)": "semver>=7.6.0 pulls in the regex-DoS fix flagged by npm audit runs, send>=0.19.0 keeps the Express stack on the patched template-injection/XSS issue via SendStream.redirect (CVE-2024-43799), @babel/runtime>=7.26.10 patches GHSA-968p-4wvh-cqc8 raised via WatermelonDB, and @react-native-community/cli@20.0.2 ensures metro tooling stays in lockstep with apps/mobile (see docs/architecture.md#repository-layout).",
     "overrides": {
+      "@babel/runtime": "^7.26.10",
       "@react-native-community/cli": "^20.0.2",
       "send": "^0.19.0",
       "semver@^7.0.0": "^7.6.0"
