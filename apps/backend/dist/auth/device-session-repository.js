@@ -188,6 +188,9 @@ export const createDeviceSessionRepository = () => {
           last_rotated_at = $6,
           updated_at = NOW()
         WHERE id = $1
+          AND token_id = $7
+          AND rotation_id = $8
+          AND refresh_token_hash = $9
       `;
             const result = await client.query(query, [
                 input.deviceSessionId,
@@ -196,9 +199,12 @@ export const createDeviceSessionRepository = () => {
                 input.refreshTokenHash,
                 input.refreshTokenExpiresAt,
                 input.rotatedAt,
+                input.expectedTokenId,
+                input.expectedRotationId,
+                input.expectedRefreshTokenHash,
             ]);
             if (result.rowCount === 0) {
-                throw new Error(`Device session ${input.deviceSessionId} not found for rotation`);
+                throw new DeviceSessionRotationConflictError(`Device session ${input.deviceSessionId} rotation conflict`);
             }
         },
         async revokeDeviceSession(client, input) {
@@ -231,3 +237,8 @@ export const createDeviceSessionRepository = () => {
         },
     };
 };
+export class DeviceSessionRotationConflictError extends Error {
+    constructor(message = 'Device session rotation conflict') {
+        super(message);
+    }
+}

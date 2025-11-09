@@ -42,7 +42,12 @@ const gracefulShutdown = async (trigger: string, detail?: unknown) => {
     process.exit(1);
   }, env.shutdownTimeoutMs);
 
-  if (typeof timeout.unref === 'function') {
+  if (
+    typeof timeout === 'object' &&
+    timeout !== null &&
+    'unref' in timeout &&
+    typeof timeout.unref === 'function'
+  ) {
     timeout.unref();
   }
 

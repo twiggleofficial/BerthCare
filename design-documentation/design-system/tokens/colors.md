@@ -85,7 +85,6 @@ care-900: #004D42  (rgb 0, 77, 66)      // Deepest - maximum
 
 - Secondary action buttons
 - Wellness indicators
-- Family portal accents
 - Care plan highlights
 - Positive trends
 - Connection status (online)
@@ -551,7 +550,7 @@ import { colors } from './tokens/colors';
 <Badge color={colors.visit.complete}>Complete</Badge>
 ```
 
-### CSS Variables (Family Portal Web)
+### CSS Variables (Web - Admin/Coordinator Portal)
 
 ```css
 :root {

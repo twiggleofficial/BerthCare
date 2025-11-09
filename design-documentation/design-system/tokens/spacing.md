@@ -94,16 +94,16 @@ touch-primary: 64px (8 × base)  // Primary CTAs, critical actions
 
 **Rationale:** Conversational interfaces need tighter spacing to feel natural. Generous input padding makes typing easier.
 
-### Family Portal (Web)
+### Admin/Coordinator Portal (Web)
 
-**Goal:** Calm, trustworthy, accessible
+**Goal:** Efficient data management, clear reporting
 
-- **Content max-width:** 720px (optimal reading length)
-- **Section spacing:** 48px vertical
+- **Content max-width:** 1200px (data tables need width)
+- **Section spacing:** 32px vertical
 - **Card padding:** 24px all sides
-- **Paragraph spacing:** 16px between blocks
+- **Table row height:** 48px minimum
 
-**Rationale:** Families need reassurance, not density. Generous spacing creates a calm, professional experience.
+**Rationale:** Coordinators need to see data efficiently. Optimize for scanning and data entry.
 
 ---
 
@@ -181,7 +181,7 @@ Top Navigation:
 ```
 mobile:   < 768px   // Primary target - optimize here first
 tablet:   768-1024px // Secondary - more breathing room
-desktop:  > 1024px   // Family portal only
+desktop:  > 1024px   // Admin/coordinator portal only
 ```
 
 ### Scaling Strategy
@@ -193,7 +193,7 @@ desktop:  > 1024px   // Family portal only
 - Maintain touch targets (don't shrink)
 - Add horizontal spacing in forms (single → two-column)
 
-**Tablet → Desktop (Family Portal Only):**
+**Tablet → Desktop (Admin/Coordinator Portal Only):**
 
 - Increase section spacing: 32px → 48px
 - Increase card padding: 24px → 32px

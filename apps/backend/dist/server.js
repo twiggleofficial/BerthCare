@@ -30,7 +30,10 @@ const gracefulShutdown = async (trigger, detail) => {
         serverLogger.error('Force exiting after shutdown timeout', { trigger });
         process.exit(1);
     }, env.shutdownTimeoutMs);
-    if (typeof timeout.unref === 'function') {
+    if (typeof timeout === 'object' &&
+        timeout !== null &&
+        'unref' in timeout &&
+        typeof timeout.unref === 'function') {
         timeout.unref();
     }
     const closeHttpServer = async () => {

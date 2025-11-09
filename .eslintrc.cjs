@@ -4,8 +4,8 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: [
-      './tsconfig.base.json',
       './apps/backend/tsconfig.json',
+      './apps/backend/tsconfig.eslint.json',
       './apps/mobile/tsconfig.json',
       './libs/shared/tsconfig.json',
       './libs/utils/tsconfig.json'
@@ -56,6 +56,7 @@ module.exports = {
       { checksVoidReturn: false }
     ],
     'react/react-in-jsx-scope': 'off',
-    'react/jsx-uses-react': 'off'
+    'react/jsx-uses-react': 'off',
+    'react/prop-types': 'off'
   }
 };

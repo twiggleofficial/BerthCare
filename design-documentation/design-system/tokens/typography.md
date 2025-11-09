@@ -288,7 +288,7 @@ overflow: hidden;
 
 ## Implementation
 
-### CSS (Web/Family Portal)
+### CSS (Web - Admin/Coordinator Portal)
 
 ```css
 :root {
@@ -510,7 +510,7 @@ android:textSize="17sp"
 - Use sp units for all text sizes
 - Support system font scaling
 
-### Web (Family Portal)
+### Web (Admin/Coordinator Portal)
 
 ```css
 /* Use rem units */

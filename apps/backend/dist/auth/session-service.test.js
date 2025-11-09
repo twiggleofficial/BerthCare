@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { describe, expect, it } from 'vitest';
 import { projectMetadata } from '@berthcare/shared';
 import { env } from '../config/environment.js';
+import { createDeviceSessionRepository, DeviceSessionRotationConflictError, } from './device-session-repository.js';
 import { createSessionService } from './session-service.js';
 import { seedDeviceSession } from './test-seeders.js';
 import { setupTestDatabase } from './test-utils.js';
@@ -188,14 +189,29 @@ describe('SessionService', () => {
     });
     it('revokes the device session when concurrent refresh attempts reuse a token', async () => {
         const db = await setupTestDatabase();
-        const service = createSessionService({ pool: db.pool });
+        const baseRepository = createDeviceSessionRepository();
+        const rotatedTokens = new Set();
+        let conflictTokenId = null;
+        const repository = {
+            ...baseRepository,
+            async rotateDeviceSession(client, input) {
+                if (conflictTokenId && input.expectedTokenId === conflictTokenId) {
+                    if (rotatedTokens.has(input.expectedTokenId)) {
+                        throw new DeviceSessionRotationConflictError(`Simulated rotation conflict for token ${input.expectedTokenId}`);
+                    }
+                    rotatedTokens.add(input.expectedTokenId);
+                }
+                return baseRepository.rotateDeviceSession(client, input);
+            },
+        };
+        const service = createSessionService({ pool: db.pool, repository });
         try {
             const seed = await seedDeviceSession(db);
+            conflictTokenId = seed.tokenId;
             const firstAttempt = service.refreshSession({
                 refreshToken: seed.refreshToken,
                 deviceId: seed.deviceSessionId,
             }, {});
-            await new Promise((resolve) => setTimeout(resolve, 0));
             const secondAttempt = service.refreshSession({
                 refreshToken: seed.refreshToken,
                 deviceId: seed.deviceSessionId,

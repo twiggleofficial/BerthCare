@@ -772,7 +772,7 @@ All button combinations meet WCAG AAA (7:1 minimum):
 
 **Critical:** Always explain WHY a button is disabled.
 
-### Keyboard Navigation (Web/Family Portal)
+### Keyboard Navigation (Web - Admin/Coordinator Portal)
 
 - **Tab:** Move focus to button
 - **Shift + Tab:** Move focus to previous element
