@@ -66,7 +66,7 @@ export function SettingsScreen({ navigation }: SettingsProps) {
       }
     };
 
-    loadPreferences();
+    void loadPreferences();
 
     return () => {
       isActive = false;

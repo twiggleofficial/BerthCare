@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { ViewStyle } from 'react-native';
 import { SplashScreen, Stack } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -20,7 +20,7 @@ void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [client] = useState(createQueryClient);
-  const [isAppReady, setIsAppReady] = useState(true);
+  const [isAppReady] = useState(true);
   const hasHiddenSplashScreen = useRef(false);
 
   const paperTheme = useMemo<BerthcareTheme>(() => berthcareTheme, []);

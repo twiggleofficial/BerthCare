@@ -4,7 +4,7 @@ import { projectMetadata } from '@berthcare/shared';
 import { env } from '../config/environment.js';
 import { getDatabasePool } from '../database/index.js';
 import { createLogger, serializeError } from '../logger/index.js';
-import { createDeviceSessionRepository, } from './device-session-repository.js';
+import { createDeviceSessionRepository, DeviceSessionRotationConflictError, } from './device-session-repository.js';
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const SESSION_TOUCH_THRESHOLD_MS = 5 * 60 * 1000;
 const JWT_ALGORITHM = 'HS256';
@@ -163,14 +163,25 @@ export const createSessionService = (options = {}) => {
                     algorithm: JWT_ALGORITHM,
                 });
                 const refreshTokenHash = hashToken(refreshToken);
-                await repository.rotateDeviceSession(client, {
-                    deviceSessionId: session.id,
-                    tokenId,
-                    rotationId,
-                    refreshTokenHash,
-                    refreshTokenExpiresAt: refreshExpiresAt,
-                    rotatedAt: now,
-                });
+                try {
+                    await repository.rotateDeviceSession(client, {
+                        deviceSessionId: session.id,
+                        tokenId,
+                        rotationId,
+                        refreshTokenHash,
+                        refreshTokenExpiresAt: refreshExpiresAt,
+                        rotatedAt: now,
+                        expectedTokenId: session.tokenId,
+                        expectedRotationId: session.rotationId,
+                        expectedRefreshTokenHash: session.refreshTokenHash,
+                    });
+                }
+                catch (error) {
+                    if (error instanceof DeviceSessionRotationConflictError) {
+                        await revokeForReplay('refresh_token_reuse');
+                    }
+                    throw error;
+                }
                 await repository.touchDeviceSession(client, session.id, now);
                 await client.query('COMMIT');
                 committed = true;

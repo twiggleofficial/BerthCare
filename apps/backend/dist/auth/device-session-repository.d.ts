@@ -57,6 +57,9 @@ export type RotateDeviceSessionInput = {
     refreshTokenHash: string;
     refreshTokenExpiresAt: Date;
     rotatedAt: Date;
+    expectedTokenId: string;
+    expectedRotationId: string;
+    expectedRefreshTokenHash: string;
 };
 export type RevokeDeviceSessionInput = {
     deviceSessionId: string;
@@ -74,3 +77,6 @@ export interface DeviceSessionRepository {
     touchDeviceSession(client: PoolClient, deviceSessionId: string, seenAt: Date): Promise<void>;
 }
 export declare const createDeviceSessionRepository: () => DeviceSessionRepository;
+export declare class DeviceSessionRotationConflictError extends Error {
+    constructor(message?: string);
+}

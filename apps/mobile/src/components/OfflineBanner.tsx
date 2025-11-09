@@ -24,8 +24,9 @@ export function OfflineBanner() {
   const { spacing, colors, typography } = theme.tokens;
 
   return (
-    <Portal pointerEvents="box-none">
+    <Portal>
       <View
+        pointerEvents="box-none"
         accessibilityRole="alert"
         accessibilityLiveRegion="polite"
         style={[
