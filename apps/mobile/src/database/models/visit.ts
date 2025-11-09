@@ -67,7 +67,8 @@ export class Visit extends SyncableModel {
   @writer
   async recordCheckIn(update: VisitCheckInUpdate): Promise<void> {
     await this.update((record) => {
-      record.checkInTime = update.timestamp ?? new Date();
+      const nextTimestamp = update.timestamp ?? record.checkInTime ?? new Date();
+      record.checkInTime = nextTimestamp;
       if (update.latitude !== undefined) {
         record.checkInLatitude = update.latitude;
       }
@@ -82,7 +83,7 @@ export class Visit extends SyncableModel {
   @writer
   async recordCheckOut(update: VisitCheckOutUpdate = {}): Promise<void> {
     await this.update((record) => {
-      const timestamp = update.timestamp ?? new Date();
+      const timestamp = update.timestamp ?? record.checkOutTime ?? new Date();
       record.checkOutTime = timestamp;
       if (update.latitude !== undefined) {
         record.checkOutLatitude = update.latitude;

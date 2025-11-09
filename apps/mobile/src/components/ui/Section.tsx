@@ -15,7 +15,7 @@ export type SectionProps = {
 
 export const Section = ({ title, children, style, testID }: SectionProps) => {
   const theme = useTheme<BerthcareTheme>();
-  const { spacing, colors, typography } = theme.tokens;
+  const { spacing, colors } = theme.tokens;
 
   return (
     <View
@@ -33,11 +33,7 @@ export const Section = ({ title, children, style, testID }: SectionProps) => {
         style,
       ]}
     >
-      <Typography
-        variant="heading"
-        weight={typography.weights.semibold}
-        accessibilityRole="header"
-      >
+      <Typography variant="heading" accessibilityRole="header">
         {title}
       </Typography>
       {children}
