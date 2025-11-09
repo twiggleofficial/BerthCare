@@ -11,9 +11,10 @@ import {
 } from '@react-navigation/native';
 import { QueryClientProvider } from '@tanstack/react-query';
 
+import { DatabaseProvider, database } from '../src/database';
 import { theme as berthcareTheme, type BerthcareTheme } from '../src/design-system';
 import { createQueryClient } from '../src/services/api';
-import { NetworkListener, OfflineBanner } from '../src/components';
+import { NetworkListener, OfflineBanner, SyncManager } from '../src/components';
 import { recordAppLaunchReady } from '../src/services/performance/launch-metrics';
 
 void SplashScreen.preventAutoHideAsync();
@@ -56,15 +57,18 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={$root} onLayout={handleRootLayout}>
       <SafeAreaProvider>
-        <NetworkListener />
-        <QueryClientProvider client={client}>
-          <PaperProvider theme={paperTheme}>
-            <OfflineBanner />
-            <ThemeProvider value={navigationTheme}>
-              <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
-            </ThemeProvider>
-          </PaperProvider>
-        </QueryClientProvider>
+        <DatabaseProvider database={database}>
+          <NetworkListener />
+          <SyncManager />
+          <QueryClientProvider client={client}>
+            <PaperProvider theme={paperTheme}>
+              <OfflineBanner />
+              <ThemeProvider value={navigationTheme}>
+                <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
+              </ThemeProvider>
+            </PaperProvider>
+          </QueryClientProvider>
+        </DatabaseProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

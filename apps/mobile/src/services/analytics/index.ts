@@ -1,7 +1,17 @@
 import type { BiometricSupport } from '../device/biometrics';
 
+type LaunchRequirementEventProps = {
+  durationMs?: number;
+  targetMs?: number;
+  metTarget?: boolean;
+  requirement?: string;
+  timestamp?: string;
+};
+
 type AnalyticsEventName =
   | 'app_launch_ready'
+  | 'app_launch_requirement_failed'
+  | 'database_write_latency'
   | 'activation_screen_view'
   | 'activation_code_submit'
   | 'activation_success'
@@ -13,12 +23,16 @@ type AnalyticsEventName =
   | 'biometric_enrollment_error';
 
 type AnalyticsEventPropertiesMap = {
-  app_launch_ready: {
-    durationMs?: number;
-    targetMs?: number;
-    metTarget?: boolean;
-    requirement?: string;
-    timestamp?: string;
+  app_launch_ready: LaunchRequirementEventProps;
+  app_launch_requirement_failed: LaunchRequirementEventProps;
+  database_write_latency: {
+    entity: string;
+    operation: 'insert' | 'update' | 'delete' | 'bulk';
+    durationMs: number;
+    rowsAffected?: number;
+    schemaVersion: number;
+    thresholdMs: number;
+    timestamp: string;
   };
   activation_screen_view: { source?: string; emailPrefilled?: boolean };
   activation_code_submit: { attempt?: number; emailDomain?: string | null };

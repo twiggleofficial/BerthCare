@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 import {
   Button,
@@ -12,7 +12,9 @@ import {
 } from 'react-native-paper';
 import { useQuery } from '@tanstack/react-query';
 
+import { AppHeader } from '../../components';
 import { colors as tokenColors } from '../../design-system/tokens/colors';
+import { useManualSyncRefresh } from '../../hooks/useManualSyncRefresh';
 import type { ScheduleStackScreenProps } from '../../navigation/types';
 import { useCarePlanStore } from '../../state/care-plan-store';
 import { QUERY_STALE_TIMES } from '../../services/api/query-client';
@@ -28,6 +30,7 @@ export function ScheduleListScreen({ navigation }: ScheduleListProps) {
   const theme = useTheme();
   const { caregiverName, activeShiftName, tasks, upcomingVisit, toggleTask } =
     useCarePlanStore();
+  const { refreshing, onRefresh } = useManualSyncRefresh();
 
   const { data: careTip, isPending } = useQuery({
     queryKey: ['care-tip'],
@@ -43,7 +46,12 @@ export function ScheduleListScreen({ navigation }: ScheduleListProps) {
   const nextTask = useMemo(() => tasks.find((task) => !task.isComplete), [tasks]);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       {__DEV__ && (
         <Link
           href="/component-preview"
@@ -52,9 +60,10 @@ export function ScheduleListScreen({ navigation }: ScheduleListProps) {
           Open component preview ↗
         </Link>
       )}
-      <Text variant="headlineSmall" style={styles.pageTitle}>
-        {`Hi ${caregiverName}, you're guiding the ${activeShiftName}`}
-      </Text>
+      <AppHeader
+        title={`Hi ${caregiverName}, you're guiding the ${activeShiftName}`}
+        subtitle="Everything syncs quietly, even when you're offline."
+      />
 
       <Card style={styles.card}>
         <Card.Title
@@ -165,9 +174,6 @@ const styles = StyleSheet.create({
   container: {
     padding: 24,
     paddingBottom: 48,
-  },
-  pageTitle: {
-    marginBottom: 12,
   },
   card: {
     borderRadius: 20,

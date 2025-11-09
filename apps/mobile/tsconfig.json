@@ -3,10 +3,14 @@
   "compilerOptions": {
     "strict": true,
     "baseUrl": ".",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": false,
+    "useDefineForClassFields": false
   },
   "include": [
     "app",
+    "App.tsx",
     "src",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",

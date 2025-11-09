@@ -7,6 +7,7 @@ module.exports = {
       './apps/backend/tsconfig.json',
       './apps/backend/tsconfig.eslint.json',
       './apps/mobile/tsconfig.json',
+      './apps/mobile/tsconfig.vitest.json',
       './libs/shared/tsconfig.json',
       './libs/utils/tsconfig.json'
     ],

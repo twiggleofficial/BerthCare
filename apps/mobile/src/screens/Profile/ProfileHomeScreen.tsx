@@ -1,9 +1,10 @@
 import { StyleSheet, View } from 'react-native';
-import { Button, Card, List, Text } from 'react-native-paper';
+import { Button, Card, List } from 'react-native-paper';
 
 import type { ProfileStackScreenProps } from '../../navigation/types';
 import { useAppStore } from '../../store';
 import type { UserProfile } from '../../store/types';
+import { AppHeader } from '../../components';
 
 type ProfileHomeProps = ProfileStackScreenProps<'ProfileHome'>;
 
@@ -15,7 +16,7 @@ export function ProfileHomeScreen({ navigation }: ProfileHomeProps) {
 
   return (
     <View style={styles.container}>
-      <Text variant="headlineSmall">Your profile</Text>
+      <AppHeader title="Your profile" subtitle="Manage preferences and biometrics." />
       <Card style={styles.card}>
         <List.Item
           title={profileName}

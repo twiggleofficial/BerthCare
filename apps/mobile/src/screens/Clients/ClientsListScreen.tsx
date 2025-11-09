@@ -1,7 +1,9 @@
 import { FlatList, StyleSheet, View } from 'react-native';
-import { Avatar, IconButton, List, Text } from 'react-native-paper';
+import { Avatar, IconButton, List } from 'react-native-paper';
 
 import type { ClientsStackScreenProps } from '../../navigation/types';
+import { AppHeader } from '../../components';
+import { useManualSyncRefresh } from '../../hooks/useManualSyncRefresh';
 
 const clients = [
   { id: 'clara-l', name: 'Clara Lewis', status: 'Visit complete' },
@@ -12,14 +14,16 @@ const clients = [
 type ClientsListProps = ClientsStackScreenProps<'ClientsList'>;
 
 export function ClientsListScreen({ navigation }: ClientsListProps) {
+  const { refreshing, onRefresh } = useManualSyncRefresh();
+
   return (
     <View style={styles.container}>
-      <Text variant="headlineSmall" style={styles.heading}>
-        Clients
-      </Text>
+      <AppHeader title="Clients" subtitle="Tap a client to review their plan." />
       <FlatList
         data={clients}
         keyExtractor={(client) => client.id}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         renderItem={({ item }) => (
           <List.Item
             title={item.name}
@@ -64,9 +68,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-  },
-  heading: {
-    marginBottom: 16,
   },
   separator: {
     height: 1,
