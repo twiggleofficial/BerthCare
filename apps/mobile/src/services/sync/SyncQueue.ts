@@ -58,6 +58,8 @@ const valueToPriority = (value: number): SyncQueuePriority => {
   return resolved ?? 'normal';
 };
 
+type WriteTelemetryContext = Parameters<typeof withDatabaseWriteTelemetry>[0];
+
 /**
  * Persists pending mutations in a WatermelonDB-backed queue so sync can resume
  * seamlessly across app restarts. Entries with a `critical` priority always
@@ -108,7 +110,7 @@ export class SyncQueue {
   }
 
   async dequeue(): Promise<SyncQueueChange | null> {
-    const telemetryContext = {
+    const telemetryContext: WriteTelemetryContext = {
       entity: SYNC_QUEUE_TABLE,
       operation: 'delete',
       database: this.database,
@@ -149,7 +151,7 @@ export class SyncQueue {
   }
 
   async clear(): Promise<void> {
-    const telemetryContext = {
+    const telemetryContext: WriteTelemetryContext = {
       entity: SYNC_QUEUE_TABLE,
       operation: 'bulk',
       database: this.database,
